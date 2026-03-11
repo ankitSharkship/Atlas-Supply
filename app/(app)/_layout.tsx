@@ -1,5 +1,5 @@
-import { Stack, router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
+import { Stack, router } from 'expo-router';
 import { useEffect } from 'react';
 
 export default function AppLayout() {
@@ -16,9 +16,7 @@ export default function AppLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="dashboard" />
-      <Stack.Screen name="vehicle-reporting" />
-      <Stack.Screen name="documents-submission" />
-      <Stack.Screen name="hpod" />
+      <Stack.Screen name="loadingmemoDetails" />
     </Stack>
   );
 }

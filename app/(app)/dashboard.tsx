@@ -1,22 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-  Alert,
-  Platform,
-} from 'react-native';
-import { router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Haptics from 'expo-haptics';
 import Colors from '@/constants/colors';
 import { useAuth } from '@/context/AuthContext';
-import { getFirstMileImplantDisplay, getLastMileOpodDisplay } from '@/lib/api-service';
+import { getLoadingMemoDisplay } from '@/lib/api-service';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  Alert,
+  Platform,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const VR_SUBMITTED_KEY = 'vr_submitted';
 const DS_SUBMITTED_KEY = 'ds_submitted';
@@ -37,25 +36,13 @@ interface DashboardCard {
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
-  const [vrPending, setVrPending] = useState(0);
-  const [dsPending, setDsPending] = useState(0);
-  const [hpodPending, setHpodPending] = useState(0);
+  const [lmPending, setLmPending] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadCounts = async () => {
     try {
-      const [implantData, hpodData] = await Promise.all([
-        getFirstMileImplantDisplay(user?.locations),
-        getLastMileOpodDisplay(user?.locations),
-      ]);
-
-      const allEntries = implantData.first_mile_implant_data;
-      const dsEntries = allEntries.filter((e) => e.status === 'Vehicle Get Loaded');
-      const vrEntries = allEntries.filter((e) => e.status !== 'Vehicle Get Loaded');
-
-      setDsPending(dsEntries.length);
-      setVrPending(vrEntries.length);
-      setHpodPending(hpodData.total_count || 0);
+      const lmData = await getLoadingMemoDisplay(user?.locations);
+      setLmPending(lmData.total_count || 0);
     } catch (error) {
       console.error('Failed to load counts:', error);
     }
@@ -87,39 +74,15 @@ export default function DashboardScreen() {
 
   const allCards: DashboardCard[] = [
     {
-      id: 'vehicle-reporting',
-      title: 'Pending To Report',
-      description: 'Track and manage vehicle reporting',
-      icon: 'truck-check',
-      iconLib: 'mci',
-      color: Colors.accent,
-      bgColor: '#FFF3E8',
-      route: '/(app)/vehicle-reporting',
-      pending: vrPending,
-      roles: ['implant'],
-    },
-    {
-      id: 'documents-submission',
-      title: 'Documents Submission',
-      description: 'Submit shipment documents',
-      icon: 'file-text',
-      iconLib: 'feather',
-      color: Colors.primary,
-      bgColor: '#EBF1FF',
-      route: '/(app)/documents-submission',
-      pending: dsPending,
-      roles: ['implant'],
-    },
-    {
-      id: 'hpod',
-      title: 'HPOD',
-      description: 'Hard Proof of Delivery tasks',
+      id: 'loadingmemodetails',
+      title: 'Loading Memo Details',
+      description: 'Loading Memo Details',
       icon: 'clipboard-check',
       iconLib: 'mci',
       color: '#7C3AED',
       bgColor: '#F3F0FF',
-      route: '/(app)/hpod',
-      pending: hpodPending,
+      route: '/(app)/loadingmemodetails',
+      pending: lmPending,
       roles: ['central'],
     },
   ];
@@ -131,28 +94,21 @@ export default function DashboardScreen() {
     return true;
   }
 
-  if (user.role === 'implant_employee') {
-    return card.id === 'vehicle-reporting' || card.id === 'documents-submission';
-  }
-
-  if (user.role === 'central_employee') {
-    return card.id === 'hpod';
-  }
+  if (user.role === 'supply_employee') {
+    return card.id === 'loadingmemodetails';}
 
   return false;
 });
   const handleCardPress = async (card: DashboardCard) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push(card.route as any);
+    router.push('/(app)/loadingmemoDetails');
   };
 
   const roleLabel =
   user?.role === 'ADMIN'
     ? 'Administrator'
-    : user?.role === 'implant_employee'
-    ? 'Implant Employee'
-    : user?.role === 'central_employee'
-    ? 'Central Employee'
+    : user?.role === 'supply_employee'
+    ? 'Supply Employee'
     : 'User';
 
   const topPad = Platform.OS === 'web' ? 67 : insets.top;

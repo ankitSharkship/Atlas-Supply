@@ -128,103 +128,16 @@ export class ApiService {
   }
 }
 
-// Interface for Enquiry Status Response
-export interface EnquiryStatusResponse {
-  summary: {
-    Operations: {
-      "Collect Original POD": number;
-      "Generate Lorry Receipt": number;
-      "Get ePOD after Delivery": number;
-      "In Transit": number;
-      "Original POD Verified": number;
-      "Vehicle Delivered": number;
-      "Vehicle Gate-In": number;
-      "Vehicle Gate-Out & Dispatch": number;
-      "Vehicle Get Loaded": number;
-      "Vehicle Reported": number;
-      "Vehicle Reporting": number;
-      "Vehicle Tracking": number;
-    }
-  };
-  total_enquiry_count: number;
-}
 
-export interface FirstMileImplantData {
-  advance_done: boolean;
-  central_team_actual_weight: number | null;
-  central_team_client_mg: number | null;
-  central_team_customer_invoice_no: string | null;
-  central_team_eway_bills: string | null;
+// --- Loading Memo ---
+
+export interface LoadingMemoData {
   created_on: string;
   customer_name: string;
-  document_upload: string | null;
-  document_uploaded_by: string | null;
-  driver_mobile_no: string | null;
-  enquiry_no: string | null;
-  from_location: string;
-  height: number | null;
-  id: any;
-  implant_actual_load_weight: number | null;
-  implant_eway_bills: string | null;
-  lorry_receipt_date: string | null;
-  lorry_receipts: string[] | null;
-  lr_assigned: string[] | null;
-  lr_assigned_count: number | null;
-  mark_loaded_datetime: string | null;
-  mark_loaded_updated_by: string | null;
-  no_of_lr_requested: number | null;
-  required_on_date: string;
-  status: string;
-  to_location: string;
-  update_document_flag: any;
-  vehicle_assigned: string | null;
-  vehicle_assigned_weight_capacity: number | null;
-  vehicle_gate_in_datetime: string | null;
-  vehicle_gate_in_datetime_updated_by: string | null;
-  vehicle_no: string | null;
-  vehicle_number: string | null;
-  vehicle_reporting_datetime: string | null;
-  vehicle_reporting_datetime_updated_by: string | null;
-  vehicle_type: string;
-  vendor_name: string | null;
-}
-
-export interface FirstMileImplantResponse {
-  first_mile_implant_data: FirstMileImplantData[];
-  total_count: number;
-}
-
-export const getEnquiryStatus = async (): Promise<EnquiryStatusResponse> => {
-  return ApiService.post<EnquiryStatusResponse>('/api/get_enquiry_status', {
-    department: 'Operations',
-    location: [],
-  });
-};
-
-export const getFirstMileImplantDisplay = async (location: string[] = []): Promise<FirstMileImplantResponse> => {
-  return ApiService.post<FirstMileImplantResponse>('/api/first_mile_implant_display', {
-    location: location,
-  });
-};
-
-export const editFirstMileImplant = async (params: any): Promise<any> => {
-  console.log(params);
-  
-  return ApiService.postFormData('/api/edit_first_mile_implant', params);
-};
-// --- HPOD (Last Mile OPOD) ---
-
-export interface LastMileOpodData {
-  courier_datetime: string | null;
-  courier_name: string | null;
-  created_on: string;
-  customer_name: string;
-  docket_no: string | null;
   enquiry_no: string;
   from_location: string;
-  id: number;
-  lorry_receipts: string[];
-  opod_files: any;
+  loading_memo: string | null;
+  loading_memo_verification_status: boolean;
   required_on_date: string;
   status: string;
   to_location: string;
@@ -233,23 +146,59 @@ export interface LastMileOpodData {
   vehicle_no: string;
 }
 
-export interface LastMileOpodResponse {
-  last_mile_opod_data: LastMileOpodData[];
+export interface LoadingMemoResponse {
+  loading_memo_data: LoadingMemoData[];
   status_filter: string;
   total_count: number;
 }
 
-export const getLastMileOpodDisplay = async (location: string[] = []): Promise<LastMileOpodResponse> => {
-  return ApiService.post<LastMileOpodResponse>('/api/last_mile_opod_display', {
+export const getLoadingMemoDisplay = async (location: string[] = []): Promise<LoadingMemoResponse> => {
+  return ApiService.post<LoadingMemoResponse>('/api/loading_memo_display', {
     location,
     status_filter: 'pending',
   });
 };
 
-export const editLastMileOpod = async (formData: FormData): Promise<any> => {
+export interface UploadLoadingMemoResponse {
+  message: string;
+  updated_data: {
+    enquiry_no: string;
+    vehicle_no: string;
+    loading_memo: string;
+    loading_memo_verification_status: string;
+    updated_at: string;
+    updated_by: string;
+    customer_name: string;
+    from_location: string;
+    to_location: string;
+    status: string;
+  };
+}
+
+const UPLOAD_ERROR_MESSAGES: Record<number, string> = {
+  400: 'Invalid request — enquiry number or file is missing.',
+  401: 'Session expired. Please log in again.',
+  404: 'Enquiry not found. The provided enquiry number does not exist.',
+  500: 'A server error occurred. Please try again later.',
+};
+
+export const uploadLoadingMemo = async (
+  enquiryNo: string,
+  fileUri: string,
+  fileName: string,
+  mimeType: string,
+): Promise<UploadLoadingMemoResponse> => {
   const headers = await ApiService.getAuthHeaderPublic();
 
-  const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/last_mile_opod_edit`, {
+  const formData = new FormData();
+  formData.append('enquiry_no', enquiryNo);
+  formData.append('loading_memo', {
+    uri: fileUri,
+    name: fileName,
+    type: mimeType,
+  } as any);
+
+  const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/loading_memo_upload`, {
     method: 'POST',
     headers,
     body: formData,
@@ -258,9 +207,14 @@ export const editLastMileOpod = async (formData: FormData): Promise<any> => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || data.error || `Request failed with status ${response.status}`);
+    const friendlyMessage =
+      UPLOAD_ERROR_MESSAGES[response.status] ||
+      data.message ||
+      data.error ||
+      `Upload failed (status ${response.status})`;
+    throw new Error(friendlyMessage);
   }
 
-  return data;
+  return data as UploadLoadingMemoResponse;
 };
 
