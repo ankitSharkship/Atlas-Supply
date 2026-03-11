@@ -1,0 +1,321 @@
+# Product Requirements Document (PRD)
+
+## Logistics Operations Mobile App (React Native)
+
+## 1. Product Overview
+
+The Logistics Operations Mobile App will allow operations employees to record vehicle arrivals and submit shipment-related documents directly from a mobile device. The application is intended to streamline field operations, reduce manual tracking, and improve visibility of operational events.
+
+The app will be built using React Native and will connect to an existing backend through APIs. The system must be fast, reliable, and easy to use in operational environments where users may have limited time and unstable network connectivity.
+
+Primary objectives:
+
+* Enable employees to mark vehicle arrival events.
+* Allow submission of shipment documents and operational data.
+* Provide role-based dashboards.
+* Maintain a simple and fast user experience.
+* Follow maintainable software architecture principles.
+
+---
+
+# 2. Target Users
+
+There are two categories of users.
+
+### Implant Employees
+
+Implant employees operate at physical loading or unloading locations.
+
+They will have access to:
+
+* Vehicle Reached
+* Documents Submission
+
+### Central Employees
+
+Central employees manage operations from central offices.
+
+They will have access to:
+
+* HPOD
+
+User role visibility will be determined using the email address used for login. For initial implementation, five demo implant employee emails and five demo central employee emails will be used.
+
+---
+
+# 3. Authentication
+
+Users will authenticate using an email and password.
+
+### Login Requirements
+
+Users enter:
+
+* Email
+* Password
+
+After successful authentication, the backend returns a session token. This token will be securely stored on the device and used for authenticated API requests.
+
+Session persistence should allow users to remain logged in until they explicitly log out or the session expires.
+
+If authentication fails, the user will receive an appropriate error message.
+
+---
+
+# 4. Dashboard
+
+After login, the user will land on the dashboard.
+
+The dashboard will display square action cards that represent operational tasks.
+
+The possible cards are:
+
+* Vehicle Reached
+* Documents Submission
+* HPOD
+
+### Role Based Visibility
+
+Implant employees will see:
+
+* Vehicle Reached
+* Documents Submission
+
+Central employees will see:
+
+* HPOD
+
+Each card will display a pending count that represents the number of pending tasks for that module.
+
+Example:
+Vehicle Reached – Pending: 12
+
+The pending counts will be retrieved from the backend through an API call when the dashboard loads.
+
+---
+
+# 5. Vehicle Reached Module
+
+This module allows implant employees to mark a vehicle as arrived at a location.
+
+### Flow
+
+Dashboard → Vehicle Reached → Select Vehicle → Enter Arrival Details → Submit
+
+### Vehicle Selection
+
+Users will select a vehicle from a dropdown list that contains vehicles pending arrival confirmation.
+
+Each vehicle entry will contain identifiers such as customer name, origin, destination, and vehicle number.
+
+When a vehicle is selected, the system will fetch and display the following vehicle details:
+
+* Transaction ID
+* Origin
+* Destination
+* Vehicle Number
+* Truck Display Name
+* Driver Number
+* Customer Name
+
+These details will appear in an information panel so the user can confirm they are selecting the correct vehicle.
+
+### Arrival Details
+
+After selecting the vehicle, the user must enter:
+
+* Arrival Date
+* Arrival Time
+
+The input should use mobile-friendly date and time pickers.
+
+### Submission
+
+When the user submits the form:
+
+* The arrival information will be sent to the backend.
+* The vehicle will be removed from the pending list.
+* The dashboard pending count will update accordingly.
+
+If submission fails, the user will see an error message and will be able to retry.
+
+---
+
+# 6. Documents Submission Module
+
+This module allows implant employees to submit shipment-related details and upload documents.
+
+### Flow
+
+Dashboard → Documents Submission → Select Vehicle → Enter GR Numbers → Fill Shipment Details → Upload Documents → Submit
+
+### Vehicle Selection
+
+The user will first select a vehicle from a dropdown list containing vehicles pending document submission.
+
+After selecting a vehicle, the system will display the following details:
+
+* Transaction ID
+* Order ID
+* Origin
+* Destination
+* Truck Name
+* Vehicle Number
+* Driver Number
+
+This information will appear in a summary card to confirm the selected shipment.
+
+### GR Number Management
+
+The user must add GR numbers related to the shipment.
+
+The system must support:
+
+* Adding multiple GR numbers through a text input field.
+* Displaying added GR numbers as individual items.
+* Removing a GR number using a cross button next to the item.
+
+This allows the user to manage a list of GR numbers easily.
+
+### Form Fields
+
+The form will include the following inputs:
+
+* GR Date
+* Actual Loaded Weight
+* Eway Bill Number
+* Rack Height
+
+GR Date will use a date picker.
+Loaded weight and rack height will accept numeric values.
+Eway bill will accept alphanumeric input.
+
+### Document Upload
+
+Users must be able to upload documents related to the shipment.
+
+The application must allow document upload through:
+
+* Camera
+* Mobile gallery
+
+Supported file formats will include images and PDF files.
+
+Users may upload one or more documents.
+
+The UI should clearly indicate uploaded documents and allow replacement if necessary.
+
+### Submission
+
+On submission:
+
+* All form data and uploaded documents will be sent to the backend.
+* The pending task will be cleared.
+* Dashboard counts will update.
+
+If upload fails or network issues occur, the user should receive clear feedback and be able to retry.
+
+---
+
+# 7. HPOD Module
+
+The HPOD module will be visible only to central employees.
+
+For the initial version, this module will show a list of pending HPOD tasks retrieved from the backend.
+
+Further functionality for HPOD processing can be added in later versions.
+
+---
+
+# 8. Performance Requirements
+
+The application must provide a fast and responsive user experience.
+
+Key requirements include:
+
+* Fast screen transitions.
+* Optimized API calls.
+* Efficient state management.
+* Avoidance of unnecessary UI re-renders.
+* Smooth form handling even with multiple document uploads.
+
+The application should perform reliably even under moderate network conditions.
+
+---
+
+# 9. Architecture Requirements
+
+The application should follow clean architecture principles and maintain separation of concerns.
+
+The codebase should be structured to separate:
+
+* UI components
+* Business logic
+* API services
+* State management
+* Utility functions
+
+Reusable components should be used wherever possible to ensure maintainability.
+
+---
+
+# 10. SOLID Design Principles
+
+The project should follow SOLID principles to ensure scalability.
+
+Single Responsibility:
+Each component and service should handle one responsibility.
+
+Open/Closed Principle:
+Components should allow extension without requiring modification.
+
+Liskov Substitution:
+Components should be replaceable without breaking functionality.
+
+Interface Segregation:
+Modules should depend only on the functionality they require.
+
+Dependency Inversion:
+High-level modules should depend on abstractions rather than concrete implementations.
+
+---
+
+# 11. Error Handling
+
+The system must gracefully handle the following situations:
+
+* Network failures
+* API errors
+* Invalid form inputs
+* Upload failures
+* Session expiration
+
+Users must receive clear feedback messages and options to retry operations.
+
+---
+
+# 12. Security Requirements
+
+Security measures must include:
+
+* Secure storage of authentication tokens
+* Authenticated API communication
+* Validation of all user inputs
+* File size and file type validation during document upload
+
+---
+
+# 13. Future Enhancements
+
+Possible improvements in later versions include:
+
+* Offline submission with background sync
+* Push notifications for pending tasks
+* Advanced search for vehicles
+* GR number auto-suggestions
+* GPS tagging for vehicle arrival
+* Analytics dashboard for operations managers
+
+---
+
+This document defines the functional and architectural requirements for the first version of the Logistics Operations Mobile App.

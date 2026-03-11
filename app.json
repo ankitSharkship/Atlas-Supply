@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Atlas Supply",
+    "slug": "sharkship-atlassupply",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "sharkshipatlassupply",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1A3C6E"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.sharkship.atlassupply"
+    },
+    "android": {
+      "package": "com.sharkship.atlassupply",
+      "adaptiveIcon": {
+        "backgroundColor": "#1A3C6E",
+        "foregroundImage": "./assets/images/icon-android.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "origin": "https://replit.com/"
+        }
+      ],
+      "expo-font",
+      "expo-web-browser"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
