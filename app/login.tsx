@@ -1,9 +1,9 @@
-import Colors from '@/constants/colors';
-import { useAuth } from '@/context/AuthContext';
-import { Feather } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
+import Colors from "@/constants/colors";
+import { useAuth } from "@/context/AuthContext";
+import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { router } from "expo-router";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -15,34 +15,35 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [showDemo, setShowDemo] = useState(false);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      setError('Please enter your email and password.');
+      setError("Please enter your email and password.");
       return;
     }
 
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
       await login(email.trim(), password.trim());
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.replace('/(app)/dashboard');
+      router.replace("/(app)/dashboard");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Login failed. Please try again.';
+      const msg =
+        err instanceof Error ? err.message : "Login failed. Please try again.";
       setError(msg);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
@@ -50,20 +51,20 @@ export default function LoginScreen() {
     }
   };
 
-  const fillDemo = (type: 'implant' | 'central') => {
-    if (type === 'implant') {
-      setEmail('implant1@demo.com');
+  const fillDemo = (type: "implant" | "central") => {
+    if (type === "implant") {
+      setEmail("implant1@demo.com");
     } else {
-      setEmail('central1@demo.com');
+      setEmail("central1@demo.com");
     }
-    setPassword('demo123');
+    setPassword("demo123");
     setShowDemo(false);
   };
 
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
         style={styles.scroll}
@@ -80,10 +81,10 @@ export default function LoginScreen() {
         <View style={styles.logoArea}>
           <View style={styles.logoIcon}>
             <Image
-  source={require('../assets/images/icon.png')}
-  style={{ width: '100%', height: '100%', borderRadius: 20 }}
-  resizeMode="contain"
-/>
+              source={require("../assets/images/atlas-app.png")}
+              style={{ width: "100%", height: "100%", borderRadius: 20 }}
+              resizeMode="contain"
+            />
           </View>
           <Text style={styles.appName}>Atlas Supply</Text>
         </View>
@@ -94,14 +95,27 @@ export default function LoginScreen() {
 
           <View style={styles.fieldContainer}>
             <Text style={styles.label}>Email Address</Text>
-            <View style={[styles.inputWrapper, error && email === '' ? styles.inputError : null]}>
-              <Feather name="mail" size={18} color={Colors.textLight} style={styles.inputIcon} />
+            <View
+              style={[
+                styles.inputWrapper,
+                error && email === "" ? styles.inputError : null,
+              ]}
+            >
+              <Feather
+                name="mail"
+                size={18}
+                color={Colors.textLight}
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 placeholder="Enter your email"
                 placeholderTextColor={Colors.textLight}
                 value={email}
-                onChangeText={(t) => { setEmail(t); setError(''); }}
+                onChangeText={(t) => {
+                  setEmail(t);
+                  setError("");
+                }}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -113,20 +127,31 @@ export default function LoginScreen() {
           <View style={styles.fieldContainer}>
             <Text style={styles.label}>Password</Text>
             <View style={styles.inputWrapper}>
-              <Feather name="lock" size={18} color={Colors.textLight} style={styles.inputIcon} />
+              <Feather
+                name="lock"
+                size={18}
+                color={Colors.textLight}
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 placeholder="Enter your password"
                 placeholderTextColor={Colors.textLight}
                 value={password}
-                onChangeText={(t) => { setPassword(t); setError(''); }}
+                onChangeText={(t) => {
+                  setPassword(t);
+                  setError("");
+                }}
                 secureTextEntry={!showPassword}
                 returnKeyType="done"
                 onSubmitEditing={handleLogin}
               />
-              <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
+              <Pressable
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeButton}
+              >
                 <Feather
-                  name={showPassword ? 'eye-off' : 'eye'}
+                  name={showPassword ? "eye-off" : "eye"}
                   size={18}
                   color={Colors.textLight}
                 />
@@ -157,8 +182,6 @@ export default function LoginScreen() {
             )}
           </Pressable>
         </View>
-
-       
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -172,10 +195,10 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    alignItems: 'center',
+    alignItems: "center",
   },
   logoArea: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 32,
   },
   logoIcon: {
@@ -183,8 +206,8 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 24,
     backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 16,
     shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 6 },
@@ -194,18 +217,18 @@ const styles = StyleSheet.create({
   },
   appName: {
     fontSize: 28,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: "Inter_700Bold",
     color: Colors.text,
     letterSpacing: -0.5,
   },
   tagline: {
     fontSize: 14,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: "Inter_400Regular",
     color: Colors.textSecondary,
     marginTop: 4,
   },
   card: {
-    width: '100%',
+    width: "100%",
     backgroundColor: Colors.card,
     borderRadius: 20,
     padding: 24,
@@ -218,13 +241,13 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 22,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: "Inter_700Bold",
     color: Colors.text,
     marginBottom: 4,
   },
   cardSubtitle: {
     fontSize: 14,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: "Inter_400Regular",
     color: Colors.textSecondary,
     marginBottom: 24,
   },
@@ -233,13 +256,13 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontFamily: 'Inter_500Medium',
+    fontFamily: "Inter_500Medium",
     color: Colors.text,
     marginBottom: 8,
   },
   inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.background,
     borderRadius: 12,
     borderWidth: 1.5,
@@ -256,15 +279,15 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 15,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: "Inter_400Regular",
     color: Colors.text,
   },
   eyeButton: {
     padding: 4,
   },
   errorBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.errorLight,
     borderRadius: 8,
     padding: 12,
@@ -274,15 +297,15 @@ const styles = StyleSheet.create({
   errorText: {
     flex: 1,
     fontSize: 13,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: "Inter_400Regular",
     color: Colors.error,
   },
   loginButton: {
     backgroundColor: Colors.accent,
     borderRadius: 14,
     height: 54,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 8,
     shadowColor: Colors.accent,
     shadowOffset: { width: 0, height: 4 },
@@ -299,23 +322,23 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     fontSize: 16,
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: "Inter_600SemiBold",
     color: Colors.white,
     letterSpacing: 0.3,
   },
   demoToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
     paddingVertical: 8,
   },
   demoToggleText: {
     fontSize: 13,
-    fontFamily: 'Inter_500Medium',
+    fontFamily: "Inter_500Medium",
     color: Colors.textSecondary,
   },
   demoBox: {
-    width: '100%',
+    width: "100%",
     backgroundColor: Colors.card,
     borderRadius: 16,
     padding: 16,
@@ -325,19 +348,19 @@ const styles = StyleSheet.create({
   },
   demoTitle: {
     fontSize: 14,
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: "Inter_600SemiBold",
     color: Colors.text,
     marginBottom: 4,
   },
   demoNote: {
     fontSize: 12,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: "Inter_400Regular",
     color: Colors.textSecondary,
     marginBottom: 12,
   },
   demoBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 10,
     gap: 10,
     borderTopWidth: 1,
@@ -350,12 +373,12 @@ const styles = StyleSheet.create({
   },
   demoBadgeText: {
     fontSize: 11,
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: "Inter_600SemiBold",
   },
   demoBtnEmail: {
     flex: 1,
     fontSize: 13,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: "Inter_400Regular",
     color: Colors.textSecondary,
   },
 });

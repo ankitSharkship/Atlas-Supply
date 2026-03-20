@@ -43,14 +43,24 @@ export class ApiService {
 
   static async post<T>(endpoint: string, body: any): Promise<T> {
     const headers = await this.getHeaders();
-
+    // console.log(`${API_BASE_URL} ${endpoint}`);
+    console.log(API_BASE_URL);
+    console.log(endpoint);
+    
+    console.log(body);
+    
+    
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),
     });
+    console.log(response);
+    
 
     const data = await response.json();
+    console.log(JSON.stringify(data));
+    
 
     if (!response.ok) {
       throw new Error(data.message || `Request failed with status ${response.status}`);
@@ -66,7 +76,6 @@ export class ApiService {
     const formData = new FormData();
     for (const key of Object.keys(params)) {
       const value = params[key];
-      console.log(key, value);
 
       if (value === null || value === undefined) continue;
 
@@ -111,110 +120,51 @@ export class ApiService {
     return data as T;
   }
 
-  static async get<T>(endpoint: string): Promise<T> {
-    const headers = await this.getHeaders();
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'GET',
-      headers,
+ static async get<T>(
+  endpoint: string,
+  queryParams?: Record<string, any>
+): Promise<T> {
+  console.log('start');
+  console.log(endpoint);
+  console.log(queryParams);
+  const headers = await this.getHeaders();
+
+  let url = `${API_BASE_URL}${endpoint}`;
+  
+  console.log(url);
+  
+  if (queryParams) {
+    const queryString = new URLSearchParams();
+
+    Object.entries(queryParams).forEach(([key, value]) => {
+      if (value === undefined || value === null) return;
+
+      if (Array.isArray(value)) {
+        value.forEach(v => queryString.append(key, v));
+      } else {
+        queryString.append(key, value);
+      }
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || `Request failed with status ${response.status}`);
+    const qs = queryString.toString();
+    if (qs) {
+      url += `?${qs}`;
     }
-
-    return data as T;
   }
-}
 
+  console.log(url);
 
-// --- Loading Memo ---
-
-export interface LoadingMemoData {
-  created_on: string;
-  customer_name: string;
-  enquiry_no: string;
-  from_location: string;
-  loading_memo: string | null;
-  loading_memo_verification_status: boolean;
-  required_on_date: string;
-  status: string;
-  to_location: string;
-  updated_at: string | null;
-  updated_by: string | null;
-  vehicle_no: string;
-}
-
-export interface LoadingMemoResponse {
-  loading_memo_data: LoadingMemoData[];
-  status_filter: string;
-  total_count: number;
-}
-
-export const getLoadingMemoDisplay = async (location: string[] = []): Promise<LoadingMemoResponse> => {
-  return ApiService.post<LoadingMemoResponse>('/api/loading_memo_display', {
-    location,
-    status_filter: 'pending',
-  });
-};
-
-export interface UploadLoadingMemoResponse {
-  message: string;
-  updated_data: {
-    enquiry_no: string;
-    vehicle_no: string;
-    loading_memo: string;
-    loading_memo_verification_status: string;
-    updated_at: string;
-    updated_by: string;
-    customer_name: string;
-    from_location: string;
-    to_location: string;
-    status: string;
-  };
-}
-
-const UPLOAD_ERROR_MESSAGES: Record<number, string> = {
-  400: 'Invalid request — enquiry number or file is missing.',
-  401: 'Session expired. Please log in again.',
-  404: 'Enquiry not found. The provided enquiry number does not exist.',
-  500: 'A server error occurred. Please try again later.',
-};
-
-export const uploadLoadingMemo = async (
-  enquiryNo: string,
-  fileUri: string,
-  fileName: string,
-  mimeType: string,
-): Promise<UploadLoadingMemoResponse> => {
-  const headers = await ApiService.getAuthHeaderPublic();
-
-  const formData = new FormData();
-  formData.append('enquiry_no', enquiryNo);
-  formData.append('loading_memo', {
-    uri: fileUri,
-    name: fileName,
-    type: mimeType,
-  } as any);
-
-  const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/loading_memo_upload`, {
-    method: 'POST',
+  const response = await fetch(url, {
+    method: 'GET',
     headers,
-    body: formData,
   });
 
   const data = await response.json();
 
   if (!response.ok) {
-    const friendlyMessage =
-      UPLOAD_ERROR_MESSAGES[response.status] ||
-      data.message ||
-      data.error ||
-      `Upload failed (status ${response.status})`;
-    throw new Error(friendlyMessage);
+    throw new Error(data.message || `Request failed with status ${response.status}`);
   }
 
-  return data as UploadLoadingMemoResponse;
-};
-
+  return data as T;
+}
+}

@@ -4,12 +4,12 @@
     "slug": "sharkship-atlassupply",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/atlas-app.png",
     "scheme": "sharkshipatlassupply",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/atlas-app.png",
       "resizeMode": "contain",
       "backgroundColor": "#1A3C6E"
     },
@@ -21,7 +21,7 @@
       "package": "com.sharkship.atlassupply",
       "adaptiveIcon": {
         "backgroundColor": "#1A3C6E",
-        "foregroundImage": "./assets/images/icon-android.png"
+        "foregroundImage": "./assets/images/atlas-app.png"
       }
     },
     "web": {

@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { decodeToken } from "react-jwt";
-import { commonMenu, servicesMenu, mastersMenu } from "@/utils/definedIDs";
 import { ApiService } from "@/lib/api-service";
+import { commonMenu, mastersMenu, servicesMenu } from "@/utils/definedIDs";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { decodeToken } from "react-jwt";
 
 interface AuthUser {
   email: string;
@@ -10,7 +10,7 @@ interface AuthUser {
   name: string;
   role?: string;
   department?: string;
-  locations?: string[];
+  zone: string[];
 }
 
 interface AuthContextType {
@@ -137,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         username: normalizedEmail,
         password: password,
       });
-
+      
       if (!data.token) {
         throw new Error("No token received from server.");
       }
@@ -157,7 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: getNameFromEmail(normalizedEmail),
         role: decoded.role,
         department: decoded.department,
-        locations: decoded.locations || [],
+        zone: decoded.zone || [],
       };
 
       await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));

@@ -1,10 +1,11 @@
-import Colors from '@/constants/colors';
-import { useAuth } from '@/context/AuthContext';
-import { getLoadingMemoDisplay } from '@/lib/api-service';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import Colors from "@/constants/colors";
+import { useAuth } from "@/context/AuthContext";
+import { getLoadingMemoDisplay } from "@/lib/loadingMemoSerivce";
+import { getVehicleAssignmentDisplay } from "@/lib/vehicleAssignmentService";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Platform,
@@ -14,37 +15,40 @@ import {
   StyleSheet,
   Text,
   View,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const VR_SUBMITTED_KEY = 'vr_submitted';
-const DS_SUBMITTED_KEY = 'ds_submitted';
+const VR_SUBMITTED_KEY = "vr_submitted";
+const DS_SUBMITTED_KEY = "ds_submitted";
 
 interface DashboardCard {
   id: string;
   title: string;
   description: string;
   icon: string;
-  iconLib: 'feather' | 'mci';
+  iconLib: "feather" | "mci";
   color: string;
   bgColor: string;
   route: string;
   pending: number;
-  roles: ('implant' | 'central')[];
+  roles: ("supply" | "central")[];
 }
 
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
   const [lmPending, setLmPending] = useState(0);
+  const [vaPending, setVaPending] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadCounts = async () => {
     try {
-      const lmData = await getLoadingMemoDisplay(user?.locations);
+      const lmData = await getLoadingMemoDisplay(user?.zone);
+      const vaData = await getVehicleAssignmentDisplay(user?.zone);
       setLmPending(lmData.total_count || 0);
+      setVaPending(vaData.total_count || 0);
     } catch (error) {
-      console.error('Failed to load counts:', error);
+      console.error("Failed to load counts:", error);
     }
   };
 
@@ -59,14 +63,14 @@ export default function DashboardScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+      { text: "Cancel", style: "cancel" },
       {
-        text: 'Sign Out',
-        style: 'destructive',
+        text: "Sign Out",
+        style: "destructive",
         onPress: async () => {
           await logout();
-          router.replace('/login');
+          router.replace("/login");
         },
       },
     ]);
@@ -74,45 +78,70 @@ export default function DashboardScreen() {
 
   const allCards: DashboardCard[] = [
     {
-      id: 'loadingmemodetails',
-      title: 'Loading Memo Details',
-      description: 'Loading Memo Details',
-      icon: 'clipboard-check',
-      iconLib: 'mci',
-      color: '#7C3AED',
-      bgColor: '#F3F0FF',
-      route: '/(app)/loadingmemodetails',
+      id: "vehicleassignment",
+      title: "Pending to Assign Truck",
+      description: "Update Vehicle Assignment Details",
+      icon: "truck-check",
+      iconLib: "mci",
+      color: Colors.accent,
+      bgColor: "#FFF3E8",
+      route: "/(app)/vehicleAssignment",
+      pending: vaPending,
+      roles: ["supply"],
+    },
+    {
+      id: "loadingmemodetails",
+      title: "Loading Memo Details",
+      description: "Loading Memo Details",
+      icon: "file-text",
+      iconLib: "feather",
+      color: Colors.primary,
+      bgColor: "#EBF1FF",
+      route: "/(app)/loadingmemoDetails",
       pending: lmPending,
-      roles: ['central'],
+      roles: ["supply"],
+    },
+    {
+      id: "addintermitentcharges",
+      title: "Add Intermitent Charges",
+      description: "Add new Intermitent Charges",
+      icon: "file-text",
+      iconLib: "feather",
+      color: Colors.primary,
+      bgColor: "#EBF1FF",
+      route: "/(app)/addIntermitentCharges",
+      pending: 0,
+      roles: ["supply"],
     },
   ];
 
- const visibleCards = allCards.filter((card) => {
-  if (!user?.role) return false;
+  const visibleCards = allCards.filter((card) => {
+    if (!user?.role) return false;
 
-  if (user.role === 'ADMIN') {
-    return true;
-  }
+    if (user.role === "ADMIN") {
+      return true;
+    }
 
-  if (user.role === 'supply_employee') {
-    return card.id === 'loadingmemodetails';}
+    if (user.role === "supply_employee") {
+      return card.id === "loadingmemodetails";
+    }
 
-  return false;
-});
+    return false;
+  });
   const handleCardPress = async (card: DashboardCard) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push('/(app)/loadingmemoDetails');
+    router.push(card.route as any);
   };
 
   const roleLabel =
-  user?.role === 'ADMIN'
-    ? 'Administrator'
-    : user?.role === 'supply_employee'
-    ? 'Supply Employee'
-    : 'User';
+    user?.role === "ADMIN"
+      ? "Administrator"
+      : user?.role === "SUPPLY"
+        ? "Supply Employee"
+        : "User";
 
-  const topPad = Platform.OS === 'web' ? 67 : insets.top;
-  const bottomPad = Platform.OS === 'web' ? 34 : insets.bottom;
+  const topPad = Platform.OS === "web" ? 67 : insets.top;
+  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
   return (
     <View style={[styles.root, { backgroundColor: Colors.background }]}>
@@ -120,7 +149,7 @@ export default function DashboardScreen() {
         <View style={styles.headerLeft}>
           <Text style={styles.greeting}>Hello,</Text>
           <Text style={styles.userName} numberOfLines={1}>
-            {user?.email.split('@')[0]}
+            {user?.email.split("@")[0]}
           </Text>
         </View>
         <View style={styles.headerRight}>
@@ -148,8 +177,6 @@ export default function DashboardScreen() {
           />
         }
       >
-        
-
         <View style={styles.cardsGrid}>
           {visibleCards.map((card) => (
             <Pressable
@@ -161,20 +188,33 @@ export default function DashboardScreen() {
               onPress={() => handleCardPress(card)}
             >
               <View style={styles.cardTop}>
-                <View style={[styles.iconBg, { backgroundColor: card.bgColor }]}>
-                  {card.iconLib === 'mci' ? (
+                <View
+                  style={[styles.iconBg, { backgroundColor: card.bgColor }]}
+                >
+                  {card.iconLib === "mci" ? (
                     <MaterialCommunityIcons
                       name={card.icon as any}
                       size={26}
                       color={card.color}
                     />
                   ) : (
-                    <Feather name={card.icon as any} size={26} color={card.color} />
+                    <Feather
+                      name={card.icon as any}
+                      size={26}
+                      color={card.color}
+                    />
                   )}
                 </View>
-                <View style={[styles.pendingBadge, { backgroundColor: card.color }]}>
-                  <Text style={styles.pendingCount}>{card.pending}</Text>
-                </View>
+                {card.id !== "addintermitentcharges" && (
+                  <View
+                    style={[
+                      styles.pendingBadge,
+                      { backgroundColor: card.color },
+                    ]}
+                  >
+                    <Text style={styles.pendingCount}>{card.pending}</Text>
+                  </View>
+                )}
               </View>
 
               <View style={styles.cardBody}>
@@ -183,10 +223,18 @@ export default function DashboardScreen() {
               </View>
 
               <View style={styles.cardFooter}>
-                <Text style={[styles.pendingLabel, { color: card.color }]}>
-                  {card.pending} pending
-                </Text>
-                <View style={[styles.arrowCircle, { backgroundColor: card.bgColor }]}>
+                {card.id !== "addintermitentcharges" && (
+                  <Text style={[styles.pendingLabel, { color: card.color }]}>
+                    {card.pending} pending
+                  </Text>
+                )}
+                {card.id === "addintermitentcharges" && <Text></Text>}
+                <View
+                  style={[
+                    styles.arrowCircle,
+                    { backgroundColor: card.bgColor },
+                  ]}
+                >
                   <Feather name="arrow-right" size={14} color={card.color} />
                 </View>
               </View>
@@ -197,7 +245,8 @@ export default function DashboardScreen() {
         <View style={styles.infoCard}>
           <Feather name="info" size={16} color={Colors.primary} />
           <Text style={styles.infoText}>
-            Pull down to refresh pending counts. All submissions are tracked in real time.
+            Pull down to refresh pending counts. All submissions are tracked in
+            real time.
           </Text>
         </View>
       </ScrollView>
@@ -213,50 +262,50 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     paddingHorizontal: 20,
     paddingBottom: 24,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
   },
   headerLeft: {
     flex: 1,
     paddingRight: 12,
   },
   headerRight: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
     gap: 8,
   },
   greeting: {
     fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-    color: 'rgba(255,255,255,0.7)',
+    fontFamily: "Inter_400Regular",
+    color: "rgba(255,255,255,0.7)",
     marginBottom: 2,
   },
   userName: {
     fontSize: 22,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: "Inter_700Bold",
     color: Colors.white,
-    textTransform: 'capitalize',
+    textTransform: "capitalize",
   },
   roleBadge: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: "rgba(255,255,255,0.15)",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
+    borderColor: "rgba(255,255,255,0.2)",
   },
   roleBadgeText: {
     fontSize: 11,
-    fontFamily: 'Inter_500Medium',
+    fontFamily: "Inter_500Medium",
     color: Colors.white,
   },
   logoutBtn: {
     width: 38,
     height: 38,
     borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   scroll: {
     flex: 1,
@@ -269,8 +318,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.card,
     borderRadius: 16,
     padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 24,
     shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 2 },
@@ -280,19 +329,19 @@ const styles = StyleSheet.create({
   },
   summaryItem: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
     gap: 4,
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
   },
   summaryNumber: {
     fontSize: 22,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: "Inter_700Bold",
     color: Colors.text,
   },
   summaryLabel: {
     fontSize: 12,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: "Inter_400Regular",
     color: Colors.textSecondary,
   },
   summaryDivider: {
@@ -308,7 +357,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: "Inter_700Bold",
     color: Colors.text,
     marginBottom: 14,
   },
@@ -331,29 +380,29 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.98 }],
   },
   cardTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: 16,
   },
   iconBg: {
     width: 52,
     height: 52,
     borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   pendingBadge: {
     minWidth: 32,
     height: 28,
     borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: 10,
   },
   pendingCount: {
     fontSize: 15,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: "Inter_700Bold",
     color: Colors.white,
   },
   cardBody: {
@@ -361,47 +410,47 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: "Inter_700Bold",
     color: Colors.text,
     marginBottom: 4,
   },
   cardDescription: {
     fontSize: 13,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: "Inter_400Regular",
     color: Colors.textSecondary,
     lineHeight: 18,
   },
   cardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     borderTopWidth: 1,
     borderTopColor: Colors.border,
     paddingTop: 14,
   },
   pendingLabel: {
     fontSize: 13,
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: "Inter_600SemiBold",
   },
   arrowCircle: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   infoCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     gap: 10,
-    backgroundColor: '#EBF1FF',
+    backgroundColor: "#EBF1FF",
     borderRadius: 12,
     padding: 14,
   },
   infoText: {
     flex: 1,
     fontSize: 12,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: "Inter_400Regular",
     color: Colors.primary,
     lineHeight: 18,
   },
