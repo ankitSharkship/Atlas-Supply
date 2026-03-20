@@ -1,5 +1,6 @@
 import Colors from "@/constants/colors";
 import { useAuth } from "@/context/AuthContext";
+import { IntermittentChargeModal } from "@/intermittent/IntermittentChargeModal";
 import { getLoadingMemoDisplay } from "@/lib/loadingMemoSerivce";
 import { getVehicleAssignmentDisplay } from "@/lib/vehicleAssignmentService";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -40,7 +41,7 @@ export default function DashboardScreen() {
   const [lmPending, setLmPending] = useState(0);
   const [vaPending, setVaPending] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
-
+  const [modalVisible, setModalVisible] = useState(false);
   const loadCounts = async () => {
     try {
       const lmData = await getLoadingMemoDisplay(user?.zone);
@@ -130,7 +131,11 @@ export default function DashboardScreen() {
   });
   const handleCardPress = async (card: DashboardCard) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push(card.route as any);
+    if (card.id !== "addintermitentcharges") {
+      router.push(card.route as any);
+    } else {
+      setModalVisible(true);
+    }
   };
 
   const roleLabel =
@@ -250,6 +255,14 @@ export default function DashboardScreen() {
           </Text>
         </View>
       </ScrollView>
+      <IntermittentChargeModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSuccess={() => {
+          // Refresh list, show toast, etc.
+          console.log("Charge recorded!");
+        }}
+      />
     </View>
   );
 }

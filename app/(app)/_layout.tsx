@@ -19,7 +19,7 @@ export default function AppLayout() {
       <Stack.Screen name="loadingmemoDetails" />
       <Stack.Screen name="vehicleAssignment" />
       <Stack.Screen name="editVehicleAssignment" />
-      <Stack.Screen name="addIntermitentCharges" />
+      {/* <Stack.Screen name="addIntermitentCharges" /> */}
     </Stack>
   );
 }
