@@ -1,10 +1,11 @@
-import { DateTimePickerModal } from "@/components/dateTimeModel";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useEffect, useState } from "react";
+
 import {
   ActivityIndicator,
+  Platform,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -43,8 +44,16 @@ export const Step1ShipmentDetails: React.FC<Props> = ({
     useEnquiryLookup();
   const [enquirySearched, setEnquirySearched] = useState(false);
   // const [dateTime, setDateTime] = useState<Date | null>(null);
-  const [open, setOpen] = useState(false);
-
+  // const [open, setOpen] = useState(false);
+  const [shipmentDateTime, setShipmentDateTime] = useState<Date | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
+  const [pickerMode, setPickerMode] = useState<"date" | "time">("date");
+  const [tempDate, setTempDate] = useState(new Date());
+  const openPicker = () => {
+    setTempDate(shipmentDateTime || new Date());
+    setPickerMode("date");
+    setShowPicker(true);
+  };
   // Auto-fill when enquiry data is successfully fetched
   useEffect(() => {
     if (enquiryData) {
@@ -76,41 +85,41 @@ export const Step1ShipmentDetails: React.FC<Props> = ({
     ? enquiryData.lorry_receipts.map((lr) => ({ label: lr, value: lr }))
     : [];
 
-  const handleDateSelect = (dateTime: Date) => {
-    const dd = String(dateTime.getDate()).padStart(2, "0");
-    const mm = String(dateTime.getMonth() + 1).padStart(2, "0");
-    const yy = String(dateTime.getFullYear()).slice(-2);
-    const hh = String(dateTime.getHours()).padStart(2, "0");
-    const min = String(dateTime.getMinutes()).padStart(2, "0");
-    
-    onChange({
-      shipmentDate: `${dd}/${mm}/${yy} ${hh}:${min}`,
-    });
-  };
+  // const handleDateSelect = (dateTime: Date) => {
+  //   const dd = String(dateTime.getDate()).padStart(2, "0");
+  //   const mm = String(dateTime.getMonth() + 1).padStart(2, "0");
+  //   const yy = String(dateTime.getFullYear()).slice(-2);
+  //   const hh = String(dateTime.getHours()).padStart(2, "0");
+  //   const min = String(dateTime.getMinutes()).padStart(2, "0");
 
-  const parseDateString = (dateStr: string): Date | null => {
-    if (!dateStr) return null;
-    const parts = dateStr.trim().split(" ");
-    if (parts.length !== 2) return null;
-    
-    const [datePart, timePart] = parts;
-    const dateParts = datePart.split("/");
-    if (dateParts.length !== 3) return null;
-    
-    const timeParts = timePart.split(":");
-    if (timeParts.length !== 2) return null;
-    
-    const [d, m, yy] = dateParts.map(Number);
-    const [h, min] = timeParts.map(Number);
-    
-    if (isNaN(d) || isNaN(m) || isNaN(yy) || isNaN(h) || isNaN(min)) return null;
-    
-    const fullYear = yy < 100 ? 2000 + yy : yy;
-    
-    const parsed = new Date(fullYear, m - 1, d, h, min);
-    if (isNaN(parsed.getTime())) return null;
-    return parsed;
-  };
+  //   onChange({
+  //     shipmentDate: `${dd}/${mm}/${yy} ${hh}:${min}`,
+  //   });
+  // };
+
+  // const parseDateString = (dateStr: string): Date | null => {
+  //   if (!dateStr) return null;
+  //   const parts = dateStr.trim().split(" ");
+  //   if (parts.length !== 2) return null;
+
+  //   const [datePart, timePart] = parts;
+  //   const dateParts = datePart.split("/");
+  //   if (dateParts.length !== 3) return null;
+
+  //   const timeParts = timePart.split(":");
+  //   if (timeParts.length !== 2) return null;
+
+  //   const [d, m, yy] = dateParts.map(Number);
+  //   const [h, min] = timeParts.map(Number);
+
+  //   if (isNaN(d) || isNaN(m) || isNaN(yy) || isNaN(h) || isNaN(min)) return null;
+
+  //   const fullYear = yy < 100 ? 2000 + yy : yy;
+
+  //   const parsed = new Date(fullYear, m - 1, d, h, min);
+  //   if (isNaN(parsed.getTime())) return null;
+  //   return parsed;
+  // };
 
   // When LR is selected, auto-fill vehicle (vehicle_no is same for whole enquiry)
   const handleLrSelect = (lr: string) => {
@@ -118,6 +127,19 @@ export const Step1ShipmentDetails: React.FC<Props> = ({
       grNo: lr,
       vehicleNo: enquiryData?.vehicle_no ?? form.vehicleNo,
     });
+  };
+  const formatApiDate = (date: Date) => {
+    const dd = String(date.getDate()).padStart(2, "0");
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const yy = String(date.getFullYear()).slice(-2);
+    const hh = String(date.getHours()).padStart(2, "0");
+    const min = String(date.getMinutes()).padStart(2, "0");
+
+    return `${dd}/${mm}/${yy} ${hh}:${min}`;
+  };
+
+  const formatDisplayDate = (date: Date) => {
+    return formatApiDate(date); // same format for now
   };
 
   const manualMode = lookupFailed || !enquirySearched;
@@ -129,13 +151,15 @@ export const Step1ShipmentDetails: React.FC<Props> = ({
       <View style={styles.row}>
         <View style={styles.col}>
           <FormField label="Shipment Date" required error={errors.shipmentDate}>
-            <TextInput
-              placeholder="dd/mm/yyyy"
-              onPress={() => {
-                setOpen(true);
-              }}
-              value={form.shipmentDate || ""}
-            />
+            <TouchableOpacity onPress={openPicker}>
+              <View style={styles.pickerDisplay}>
+                <Text>
+                  {shipmentDateTime
+                    ? formatDisplayDate(shipmentDateTime)
+                    : form.shipmentDate || "Select Date and Time"}
+                </Text>
+              </View>
+            </TouchableOpacity>
           </FormField>
         </View>
         <View style={styles.col}>
@@ -260,17 +284,52 @@ export const Step1ShipmentDetails: React.FC<Props> = ({
       )}
 
       <NavButtons onCancel={onCancel} onNext={onNext} showPrev={false} />
-      <DateTimePickerModal
-        visible={open}
-        selectedDateTime={form.shipmentDate ? parseDateString(form.shipmentDate) : new Date()}
-        onSelect={handleDateSelect}
-        onClose={() => setOpen(false)}
-      />
+      {showPicker && (
+        <DateTimePicker
+          value={tempDate}
+          mode={Platform.OS === "ios" ? "datetime" : pickerMode}
+          is24Hour={true}
+          maximumDate={new Date()}
+          onChange={(event, selectedDate) => {
+            if (event.type === "dismissed") {
+              setShowPicker(false);
+              return;
+            }
+
+            if (selectedDate) {
+              setTempDate(selectedDate);
+
+              if (pickerMode === "date") {
+                // switch to time picker
+                setPickerMode("time");
+              } else {
+                // final selection
+                setShowPicker(false);
+                setShipmentDateTime(selectedDate);
+
+                onChange({
+                  shipmentDate: formatApiDate(selectedDate),
+                });
+              }
+            }
+          }}
+        />
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  pickerDisplay: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: Platform.OS === "ios" ? 14 : 12,
+    fontSize: 14,
+    color: colors.text,
+    backgroundColor: colors.surface,
+  },
   container: { flex: 1, padding: 20 },
   row: { flexDirection: "column", gap: 0 },
   col: { flex: undefined },
