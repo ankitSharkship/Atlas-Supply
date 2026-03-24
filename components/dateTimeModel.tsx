@@ -1,6 +1,6 @@
 import Colors from "@/constants/colors";
 import { Feather } from "@expo/vector-icons";
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Modal,
@@ -41,17 +41,42 @@ export function DateTimePickerModal({
   const [viewDate, setViewDate] = useState(
     () => selectedDateTime ?? new Date(),
   );
-
   const [selected, setSelected] = useState<Date>(
     () => selectedDateTime ?? new Date(),
   );
 
-  // Use effect to reset states when modal opens
+  // Refs for ScrollView
+  const hourScrollRef = useRef<ScrollView>(null);
+  const minuteScrollRef = useRef<ScrollView>(null);
+
+  const scrollToSelectedTime = () => {
+    const hour = selected.getHours();
+    const minute = selected.getMinutes();
+
+    // Scroll hours to selected hour (each item 44px height + 4px margin = 48px)
+    hourScrollRef.current?.scrollTo({
+      y: hour * 48,
+      animated: true,
+    });
+
+    // Scroll minutes to selected minute
+    minuteScrollRef.current?.scrollTo({
+      y: minute * 48,
+      animated: true,
+    });
+  };
+
+  // Reset states and scroll to selected time when modal opens
   useEffect(() => {
     if (visible) {
       const d = selectedDateTime ?? new Date();
       setViewDate(d);
       setSelected(d);
+
+      // Scroll to selected hour/minute after brief delay
+      setTimeout(() => {
+        scrollToSelectedTime();
+      }, 100);
     }
   }, [visible, selectedDateTime]);
 
@@ -158,7 +183,11 @@ export function DateTimePickerModal({
           {/* TIME PICKER */}
           <View style={{ flexDirection: "row", marginTop: 20 }}>
             {/* HOURS */}
-            <ScrollView style={{ height: 120, flex: 1 }}>
+            <ScrollView
+              ref={hourScrollRef}
+              style={{ height: 120, flex: 1 }}
+              showsVerticalScrollIndicator={false}
+            >
               {hours.map((h) => (
                 <Pressable
                   key={h}
@@ -166,7 +195,14 @@ export function DateTimePickerModal({
                     mStyles.timeItem,
                     selected.getHours() === h && mStyles.timeItemSelected,
                   ]}
-                  onPress={() => updateHour(h)}
+                  onPress={() => {
+                    updateHour(h);
+                    // Scroll to keep selected item visible
+                    hourScrollRef.current?.scrollTo({
+                      y: h * 48,
+                      animated: true,
+                    });
+                  }}
                 >
                   <Text
                     style={[
@@ -181,7 +217,11 @@ export function DateTimePickerModal({
             </ScrollView>
 
             {/* MINUTES */}
-            <ScrollView style={{ height: 120, flex: 1 }}>
+            <ScrollView
+              ref={minuteScrollRef}
+              style={{ height: 120, flex: 1 }}
+              showsVerticalScrollIndicator={false}
+            >
               {minutes.map((m) => (
                 <Pressable
                   key={m}
@@ -189,7 +229,14 @@ export function DateTimePickerModal({
                     mStyles.timeItem,
                     selected.getMinutes() === m && mStyles.timeItemSelected,
                   ]}
-                  onPress={() => updateMinute(m)}
+                  onPress={() => {
+                    updateMinute(m);
+                    // Scroll to keep selected item visible
+                    minuteScrollRef.current?.scrollTo({
+                      y: m * 48,
+                      animated: true,
+                    });
+                  }}
                 >
                   <Text
                     style={[
@@ -205,7 +252,7 @@ export function DateTimePickerModal({
             </ScrollView>
           </View>
 
-          {/* CONFIRM */}
+          {/* CONFIRM BUTTON - unchanged */}
           <Pressable
             style={[mStyles.timeConfirmBtn, { marginTop: 16 }]}
             onPress={() => {

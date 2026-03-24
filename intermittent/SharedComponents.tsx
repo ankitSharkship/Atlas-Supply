@@ -328,56 +328,56 @@ export const NavButtons: React.FC<NavButtonsProps> = ({
 );
 
 // ─── StepIndicator ─────────────────────────────────────────────────────────────
-interface StepIndicatorProps {
-  current: number;
-  total: number;
-  labels: string[];
-}
-export const StepIndicator: React.FC<StepIndicatorProps> = ({
-  current,
-  total,
-  labels,
-}) => (
-  <View style={styles.stepRow}>
-    {Array.from({ length: total }).map((_, i) => {
-      const step = i + 1;
-      const done = step < current;
-      const active = step === current;
-      return (
-        <React.Fragment key={step}>
-          <View style={styles.stepItem}>
-            <View
-              style={[
-                styles.stepCircle,
-                done && styles.stepCircleDone,
-                active && styles.stepCircleActive,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.stepNum,
-                  active && styles.stepNumActive,
-                  done && styles.stepNumDone,
-                ]}
-              >
-                {done ? "✓" : step}
-              </Text>
-            </View>
-            <Text
-              style={[styles.stepLabel, active && styles.stepLabelActive]}
-              numberOfLines={1}
-            >
-              {labels[i]}
-            </Text>
-          </View>
-          {i < total - 1 && (
-            <View style={[styles.stepLine, done && styles.stepLineDone]} />
-          )}
-        </React.Fragment>
-      );
-    })}
-  </View>
-);
+// interface StepIndicatorProps {
+//   current: number;
+//   total: number;
+//   labels: string[];
+// }
+// export const StepIndicator: React.FC<StepIndicatorProps> = ({
+//   current,
+//   total,
+//   labels,
+// }) => (
+//   <View style={styles.stepRow}>
+//     {Array.from({ length: total }).map((_, i) => {
+//       const step = i + 1;
+//       const done = step < current;
+//       const active = step === current;
+//       return (
+//         <React.Fragment key={step}>
+//           <View style={styles.stepItem}>
+//             <View
+//               style={[
+//                 styles.stepCircle,
+//                 done && styles.stepCircleDone,
+//                 active && styles.stepCircleActive,
+//               ]}
+//             >
+//               <Text
+//                 style={[
+//                   styles.stepNum,
+//                   active && styles.stepNumActive,
+//                   done && styles.stepNumDone,
+//                 ]}
+//               >
+//                 {done ? "✓" : step}
+//               </Text>
+//             </View>
+//             <Text
+//               style={[styles.stepLabel, active && styles.stepLabelActive]}
+//               numberOfLines={1}
+//             >
+//               {labels[i]}
+//             </Text>
+//           </View>
+//           {i < total - 1 && (
+//             <View style={[styles.stepLine, done && styles.stepLineDone]} />
+//           )}
+//         </React.Fragment>
+//       );
+//     })}
+//   </View>
+// );
 
 // ─── PhoneInput ────────────────────────────────────────────────────────────────
 interface PhoneInputProps {

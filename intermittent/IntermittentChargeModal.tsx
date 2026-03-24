@@ -1,26 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Modal,
-  View,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  SafeAreaView,
-  StatusBar,
-  Platform,
-} from 'react-native';
-import { colors } from './SharedComponents';
-import { StepIndicator } from './SharedComponents';
-import { Step1ShipmentDetails } from './Step1ShipmentDetails';
-import { Step2ChargeDetails } from './Step2ChargeDetails';
-import { Step3AmountTransfer } from './Step3AmountTransfer';
-import { Step4Approval } from './Step4Approval';
-import { useIntermittentChargeForm } from '../hooks/useIntermittentChargeForm';
-import { TOTAL_STEPS } from '../utils/types';
-import { getVendorsLookup } from '../lib/vehicleAssignmentService';
+  View,
+} from "react-native";
+import { useIntermittentChargeForm } from "../hooks/useIntermittentChargeForm";
+import { getVendorsLookup } from "../lib/vehicleAssignmentService";
+import { colors } from "./SharedComponents";
+import { Step1ShipmentDetails } from "./Step1ShipmentDetails";
+import { Step2ChargeDetails } from "./Step2ChargeDetails";
+import { Step3AmountTransfer } from "./Step3AmountTransfer";
+import { Step4Approval } from "./Step4Approval";
 
-const STEP_LABELS = ['Shipment', 'Charges', 'Transfer', 'Approval'];
+const STEP_LABELS = ["Shipment", "Charges", "Transfer", "Approval"];
 
 interface Props {
   visible: boolean;
@@ -51,7 +49,9 @@ export const IntermittentChargeModal: React.FC<Props> = ({
     onClose();
   });
 
-  const [vendorOptions, setVendorOptions] = useState<{label: string, value: string}[]>([]);
+  const [vendorOptions, setVendorOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
 
   useEffect(() => {
     if (visible) {
@@ -74,12 +74,15 @@ export const IntermittentChargeModal: React.FC<Props> = ({
 
   // Sync VENDOR RECOVERY locked fields into form state when step changes
   useEffect(() => {
-    if (formState.step1.vendorPaymentStatus === 'VENDOR RECOVERY') {
+    if (formState.step1.vendorPaymentStatus === "VENDOR RECOVERY") {
       if (currentStep === 2) {
-        updateStep2({ paymentAdjustment: 'NOT BILL TO CLIENT', chargeCategory: 'OTHERS' });
+        updateStep2({
+          paymentAdjustment: "NOT BILL TO CLIENT",
+          chargeCategory: "OTHERS",
+        });
       }
       if (currentStep === 3) {
-        updateStep3({ amountTransferTo: 'REGISTERED VENDOR' });
+        updateStep3({ amountTransferTo: "REGISTERED VENDOR" });
       }
     }
   }, [currentStep, formState.step1.vendorPaymentStatus]);
@@ -152,17 +155,28 @@ export const IntermittentChargeModal: React.FC<Props> = ({
 
         {/* Top Bar for Closing */}
         <View style={styles.topBar}>
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <TouchableOpacity
+            onPress={onClose}
+            style={styles.closeBtn}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
             <Text style={styles.closeBtnText}>✕</Text>
           </TouchableOpacity>
         </View>
 
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Intermittent Charges</Text>
+          {/* <Text style={styles.modalSubtitle}>
+            Optional subtitle or description
+          </Text> */}
+        </View>
+
         {/* Step Indicator */}
-        <StepIndicator
+        {/* <StepIndicator
           current={currentStep}
           total={TOTAL_STEPS}
           labels={STEP_LABELS}
-        />
+        /> */}
 
         {/* Scrollable content */}
         <ScrollView
@@ -185,25 +199,45 @@ const styles = StyleSheet.create({
   },
   topBar: {
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'android' ? 24 : 16,
+    paddingTop: Platform.OS === "android" ? 24 : 16,
     paddingBottom: 8,
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
     backgroundColor: colors.bg,
   },
   closeBtn: {
     padding: 8,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: "#E2E8F0",
     borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     width: 32,
     height: 32,
   },
   closeBtnText: {
     fontSize: 14,
     color: colors.text,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   scroll: { flex: 1 },
   scrollContent: { flexGrow: 1, paddingBottom: 32 },
+  modalHeader: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E5E5", // subtle separator
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: colors.text,
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    color: colors.textMuted,
+    textAlign: "center",
+    lineHeight: 22,
+  },
 });
