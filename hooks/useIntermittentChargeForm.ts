@@ -220,62 +220,99 @@ export function useIntermittentChargeForm(onSuccess: () => void) {
 
   // ─── Submit ───────────────────────────────────────────────────────────────
 
-  const buildFormData = (): FormData => {
-    const fd = new FormData();
+  const buildPayload = (): Record<string, any> => {
+    const payload: Record<string, any> = {};
     const { step1, step2, step3, step4 } = formState;
 
+    const formatApiDate = (dateStr: string): string => {
+      if (!dateStr) return dateStr;
+      const parts = dateStr.trim().split(" ");
+      if (parts.length !== 2) return dateStr;
+      const dateParts = parts[0].split("/");
+      if (dateParts.length !== 3) return dateStr;
+      const [d, m, yy] = dateParts;
+      const yearNum = Number(yy);
+      const fullYear = yearNum < 100 ? 2000 + yearNum : yearNum;
+      
+      const timePart = parts[1];
+      const timeWithSeconds = timePart.length === 5 ? `${timePart}:00` : timePart;
+      
+      return `${fullYear}-${m.padStart(2, "0")}-${d.padStart(2, "0")} ${timeWithSeconds}`;
+    };
+
     // Step 1
-    fd.append("gr_date", step1.shipmentDate);
-    fd.append("enquiry_no", step1.enquiryNo);
-    fd.append("lr_no", step1.grNo);
-    fd.append("vehicle_no", step1.vehicleNo);
-    fd.append("vendor_payment_status", step1.vendorPaymentStatus);
-    fd.append("immediate_payment", String(step1.immediatePayment));
+    payload["gr_date"] = formatApiDate(step1.shipmentDate);
+    payload["enquiry_no"] = step1.enquiryNo;
+    payload["lr_no"] = step1.grNo;
+    payload["vehicle_no"] = step1.vehicleNo;
+    payload["vendor_payment_status"] = step1.vendorPaymentStatus;
+    payload["immediate_payment"] = step1.immediatePayment;
 
     // Step 2
-    fd.append("payment_adjustment", step2.paymentAdjustment);
-    fd.append("charge_category", step2.chargeCategory);
+    const paymentAdjMap: Record<string, string> = {
+      "BILL TO CLIENT": "Bill to Client",
+      "NOT BILL TO CLIENT": "Not Bill to Client",
+    };
+    payload["payment_adjustment"] = paymentAdjMap[step2.paymentAdjustment] || step2.paymentAdjustment;
+    
+    const categoryMap: Record<string, string> = {
+      "LOADING CHARGES": "Loading Charges",
+      "UNLOADING CHARGES": "Unloading Charges",
+      "ORIGIN DETENTION": "Detention Charges",
+      "DESTINATION DETENTION": "Detention Charges",
+      "EXTRA RUN/ROUTE CHARGE": "Other Charges",
+      "CHALLAN(HEIGHT/WEIGHT)": "Other Charges",
+      "OTHERS": "Other Charges",
+    };
+    payload["charge_category"] = categoryMap[step2.chargeCategory] || step2.chargeCategory;
+    
     if (
       step2.paymentAdjustment === "BILL TO CLIENT" &&
       step2.billToClientAmount
     ) {
-      fd.append("charge_amount", step2.billToClientAmount);
+      payload["charge_amount"] = step2.billToClientAmount;
     }
 
     // Step 3
-    fd.append("amount_transfer_to", step3.amountTransferTo);
+    const transferToMap: Record<string, string> = {
+      "REGISTERED VENDOR": "Registered Vendor",
+      "UNREGISTERED VENDOR": "Unregistered Vendor",
+      "EXISTING EMPLOYEE": "Existing Employee",
+    };
+    payload["amount_transfer_to"] = transferToMap[step3.amountTransferTo] || step3.amountTransferTo;
+    
     if (step3.amountTransferTo === "REGISTERED VENDOR") {
-      fd.append("name", step3.registeredVendorName);
-      fd.append("amount", step3.registeredVendorAmount);
+      payload["name"] = step3.registeredVendorName;
+      payload["amount"] = step3.registeredVendorAmount;
     } else if (step3.amountTransferTo === "UNREGISTERED VENDOR") {
-      fd.append("payment_via", step3.paymentVia);
-      fd.append("name", step3.unregVendorName);
-      fd.append("contact_no", step3.unregContactNo);
-      fd.append("amount", step3.unregAmount);
+      payload["payment_via"] = step3.paymentVia;
+      payload["name"] = step3.unregVendorName;
+      payload["contact_no"] = step3.unregContactNo;
+      payload["amount"] = step3.unregAmount;
       if (step3.paymentVia === "bank") {
-        fd.append("bank_name", step3.unregBankName);
-        fd.append("bank_account_no", step3.unregAccountNo);
-        fd.append("branch_name", step3.unregBranchName);
-        fd.append("ifsc_code", step3.unregIfscCode);
+        payload["bank_name"] = step3.unregBankName;
+        payload["bank_account_no"] = step3.unregAccountNo;
+        payload["branch_name"] = step3.unregBranchName;
+        payload["ifsc_code"] = step3.unregIfscCode;
       } else if (step3.paymentVia === "qr_code" && step3.unregQrFile) {
-        fd.append("qr_code_file", step3.unregQrFile);
+        payload["qr_code_file"] = step3.unregQrFile;
       }
     } else if (step3.amountTransferTo === "EXISTING EMPLOYEE") {
-      fd.append("name", step3.employeeName);
-      fd.append("contact_no", step3.employeeContact);
-      fd.append("employee_code", step3.employeeCode);
-      fd.append("amount", step3.employeeAmount);
+      payload["name"] = step3.employeeName;
+      payload["contact_no"] = step3.employeeContact;
+      payload["employee_code"] = step3.employeeCode;
+      payload["amount"] = step3.employeeAmount;
     }
 
     // Step 4
     if (step3.amountTransferTo !== "EXISTING EMPLOYEE") {
-      fd.append("approved_by", step4.approvedBy);
+      payload["approved_by"] = step4.approvedBy;
     }
-    if (step4.approvalFile) fd.append("approval_file", step4.approvalFile);
-    fd.append("mail_subject", step4.mailSubject);
-    if (step4.finalRemarks.trim()) fd.append("remarks", step4.finalRemarks);
+    if (step4.approvalFile) payload["approval_file"] = step4.approvalFile;
+    payload["mail_subject"] = step4.mailSubject;
+    if (step4.finalRemarks.trim()) payload["remarks"] = step4.finalRemarks;
 
-    return fd;
+    return payload;
   };
 
   const handleSubmit = async () => {
@@ -283,20 +320,36 @@ export function useIntermittentChargeForm(onSuccess: () => void) {
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      const fd = buildFormData();
-      const res = await fetch("/api/add_intermittent_charge", {
-        method: "POST",
-        body: fd,
+      const payload = buildPayload();
+      const endpoint = "/api/add_intermittent_charge";
+      
+      console.log("=== SUBMITTING INTERMITTENT CHARGE ===");
+      console.log("Endpoint:", endpoint);
+      console.log("Payload:", JSON.stringify(payload, null, 2));
+
+      const res = await ApiService.postFormData<any>(endpoint, payload);
+
+      console.log("=== SUBMIT SUCCESS ===");
+      console.log("Response:", res);
+
+      // Complete wipe of the form only exactly upon successful submit
+      setCurrentStep(1);
+      setFormState({
+        step1: initialStep1,
+        step2: initialStep2,
+        step3: initialStep3,
+        step4: initialStep4,
       });
-      const json = await res.json();
-      if (!res.ok) {
-        setSubmitError(json.error || "Something went wrong. Please try again.");
-        return;
-      }
+      setErrors({});
+
       onSuccess();
-    } catch {
+    } catch (e: any) {
+      console.error("=== SUBMIT ERROR ===");
+      console.error("Error Message:", e.message);
+      console.error("Full Error:", e);
+      
       setSubmitError(
-        "Network error. Please check your connection and try again.",
+        e.message || "Network error. Please check your connection and try again.",
       );
     } finally {
       setIsSubmitting(false);

@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, Platform } from "react-native";
 import {
   APPROVED_BY_OPTIONS,
   FormErrors,
@@ -152,18 +152,27 @@ export const Step4Approval: React.FC<Props> = ({
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 24 },
+  container: { flex: 1, padding: 20 },
   card: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 16,
+    padding: 16,
     backgroundColor: colors.surface,
-    marginBottom: 8,
+    marginBottom: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+      },
+      android: { elevation: 2 },
+    }),
   },
-  row: { flexDirection: "row", gap: 16 },
-  col: { flex: 1 },
-  fullCol: { flex: 1 },
+  row: { flexDirection: "column", gap: 0 },
+  col: { flex: undefined },
+  fullCol: { flex: undefined },
   textareaWrapper: { position: "relative" },
   textarea: {
     minHeight: 88,

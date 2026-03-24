@@ -84,6 +84,9 @@ export class ApiService {
         // only gives Django's request.POST.get() the last value.
         // A JSON string like '["LR001","LR002"]' lets the backend parse all items.
         formData.append(key, JSON.stringify(value));
+      } else if (typeof value === 'object' && value !== null && 'uri' in value) {
+        // It's a file metadata object (e.g. from DocumentPicker or ImagePicker)
+        formData.append(key, value as any);
       } else if (
         typeof value === 'string' &&
         (value.startsWith('file://') ||

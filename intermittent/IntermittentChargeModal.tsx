@@ -148,20 +148,11 @@ export const IntermittentChargeModal: React.FC<Props> = ({
       onRequestClose={onClose}
     >
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor={colors.headerBg} />
+        <StatusBar barStyle="dark-content" backgroundColor={colors.bg} />
 
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.headerIcon}>+</Text>
-            <View>
-              <Text style={styles.headerTitle}>RECORD NEW CHARGE</Text>
-              <Text style={styles.headerSubtitle}>
-                Provide shipment and charge details to record a new intermittent overhead.
-              </Text>
-            </View>
-          </View>
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+        {/* Top Bar for Closing */}
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
             <Text style={styles.closeBtnText}>✕</Text>
           </TouchableOpacity>
         </View>
@@ -192,48 +183,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.bg,
   },
-  header: {
-    backgroundColor: colors.headerBg,
+  topBar: {
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'android' ? 16 : 12,
-    paddingBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    flex: 1,
-    gap: 12,
-  },
-  headerIcon: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: colors.white,
-    marginTop: 2,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: colors.white,
-    letterSpacing: 0.5,
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.85)',
-    marginTop: 2,
-    flexWrap: 'wrap',
+    paddingTop: Platform.OS === 'android' ? 24 : 16,
+    paddingBottom: 8,
+    alignItems: 'flex-end',
+    backgroundColor: colors.bg,
   },
   closeBtn: {
-    padding: 4,
-    marginLeft: 8,
+    padding: 8,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 32,
+    height: 32,
   },
   closeBtnText: {
-    fontSize: 18,
-    color: colors.white,
-    fontWeight: '600',
+    fontSize: 14,
+    color: colors.text,
+    fontWeight: '800',
   },
   scroll: { flex: 1 },
-  scrollContent: { paddingBottom: 32 },
+  scrollContent: { flexGrow: 1, paddingBottom: 32 },
 });

@@ -271,9 +271,9 @@ export const Step1ShipmentDetails: React.FC<Props> = ({
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 24 },
-  row: { flexDirection: "row", gap: 16 },
-  col: { flex: 1 },
+  container: { flex: 1, padding: 20 },
+  row: { flexDirection: "column", gap: 0 },
+  col: { flex: undefined },
   divider: { height: 1, backgroundColor: "#E2E8F0", marginVertical: 16 },
   searchRow: { flexDirection: "row", gap: 8, alignItems: "center" },
   loaderContainer: {
