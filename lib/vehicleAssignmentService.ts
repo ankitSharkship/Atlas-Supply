@@ -262,19 +262,26 @@ export interface VerifyVehicleRequest {
 export interface VerifyVehicleSuccessResponse {
   status: "verified";
   vehicle_number: string;
-
-  owner_name: string;
-  registration_date: string;
-  vehicle_class: string;
-  fuel_type: string;
-
-  maker_model: string;
-
-  fitness_upto: string;
-  insurance_upto: string;
-
-  rc_status: string;
-
+  vehicle_details: {
+    status: string;
+    rc_regn_no: string;
+    rc_owner_name: string;
+    rc_vh_class_desc: string;
+    rc_fuel_desc: string;
+    rc_maker_desc: string;
+    rc_fit_upto: string; // DD-Mon-YYYY (e.g. 24-Jul-2026)
+    rc_insurance_upto: string; // DD-Mon-YYYY
+    // Useful additions from the user's sample response
+    rc_regn_dt?: string;
+    rc_regn_upto?: string;
+    rc_chasi_no?: string;
+    rc_eng_no?: string;
+    rc_insurance_comp?: string;
+    rc_pucc_upto?: string;
+    rc_status?: string;
+    rc_registered_at?: string;
+  };
+  verification_timestamp: string;
   api_used: string;
   verification_source: string;
 }
@@ -356,8 +363,8 @@ export const updateVehicleAssignment = async (
 export const verifyVehicleApi = async (
   payload: VerifyVehicleRequest,
 ): Promise<VerifyVehicleResponse> => {
-  return ApiService.post<VerifyVehicleResponse>(
-    "/api/ulip/vehicle/verify/test",
+  return ApiService.postUlip<VerifyVehicleResponse>(
+    "/api/ulip/vehicle/verify/vahan01",
     payload,
   );
 };

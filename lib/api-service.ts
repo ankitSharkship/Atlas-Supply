@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+const ULIP_API_BASE_URL = process.env.EXPO_PUBLIC_ULIP_API_BASE_URL;
 const AUTH_STORAGE_KEY = "auth_user";
 
 export interface ApiResponse<T> {
@@ -67,6 +68,34 @@ export class ApiService {
 
     return data as T;
   }
+
+  static async postUlip<T>(endpoint: string, body: any): Promise<T> {
+    const headers = await this.getHeaders();
+    // console.log(`${API_BASE_URL} ${endpoint}`);
+    console.log("ULIP BASE URL:", ULIP_API_BASE_URL);
+    console.log(endpoint);
+
+    console.log(body);
+
+    const response = await fetch(`${ULIP_API_BASE_URL}${endpoint}`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    });
+    console.log(response);
+
+    const data = await response.json();
+    console.log(JSON.stringify(data));
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || `Request failed with status ${response.status}`,
+      );
+    }
+
+    return data as T;
+  }
+
 
   static async postFormData<T>(
     endpoint: string,
