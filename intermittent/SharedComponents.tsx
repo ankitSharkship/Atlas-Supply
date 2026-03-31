@@ -178,6 +178,109 @@ export function SelectDropdown<T extends string>({
   );
 }
 
+// ─── SearchableVendorPicker (Remote search with debouncing) ───────────────
+import { getVendorsLookup, Vendor } from "../lib/vehicleAssignmentService";
+
+interface SearchableVendorPickerProps {
+  value: string;
+  onSelect: (vendor: Vendor) => void;
+  placeholder?: string;
+  error?: boolean;
+  disabled?: boolean;
+}
+
+export const SearchableVendorPicker: React.FC<SearchableVendorPickerProps> = ({
+  value,
+  onSelect,
+  placeholder = "Search vendor...",
+  error,
+  disabled,
+}) => {
+  const [open, setOpen] = React.useState(false);
+  const [search, setSearch] = React.useState("");
+  const [results, setResults] = React.useState<Vendor[]>([]);
+  const [loading, setLoading] = React.useState(false);
+
+  // Debounced search
+  React.useEffect(() => {
+    if (!open) return;
+    
+    const handler = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const res = await getVendorsLookup(search);
+        if (res.success) {
+          setResults(res.data.vendors);
+        }
+      } catch (e) {
+        console.error("Search failed", e);
+      } finally {
+        setLoading(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(handler);
+  }, [search, open]);
+
+  return (
+    <View style={{ zIndex: 1000 }}>
+      <TouchableOpacity
+        style={[
+          styles.selectTrigger,
+          error && styles.inputError,
+          open && styles.selectTriggerOpen,
+          disabled && styles.inputDisabled,
+        ]}
+        onPress={() => !disabled && setOpen((v) => !v)}
+        activeOpacity={0.8}
+      >
+        <Text style={[styles.selectText, !value && styles.selectPlaceholder]}>
+          {value || placeholder}
+        </Text>
+        <Text style={styles.chevron}>{open ? "▲" : "▼"}</Text>
+      </TouchableOpacity>
+
+      {open && (
+        <View style={styles.dropdown}>
+          <TextInput
+            style={styles.searchBar}
+            placeholder="Type to search..."
+            placeholderTextColor={colors.textPlaceholder}
+            value={search}
+            onChangeText={setSearch}
+            autoFocus
+          />
+          {loading ? (
+            <ActivityIndicator style={{ padding: 12 }} color={colors.primary} />
+          ) : (
+            results.map((vendor) => (
+              <TouchableOpacity
+                key={vendor.id}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  onSelect(vendor);
+                  setOpen(false);
+                  setSearch("");
+                }}
+              >
+                <View>
+                  <Text style={styles.dropdownItemText}>{vendor.vendor_company_name}</Text>
+                  <Text style={styles.itemSubtitle}>
+                    {vendor.pan_no} | {vendor.vendor_gst || "No GST"}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))
+          )}
+          {results.length === 0 && !loading && (
+            <Text style={styles.noResults}>No vendors found</Text>
+          )}
+        </View>
+      )}
+    </View>
+  );
+};
+
 // ─── ToggleTabs ────────────────────────────────────────────────────────────────
 interface ToggleTabsProps {
   options: { label: string; value: string }[];
@@ -664,5 +767,23 @@ const styles = StyleSheet.create({
     paddingVertical: Platform.OS === "ios" ? 14 : 12,
     fontSize: 14,
     color: colors.text,
+  },
+  searchBar: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    fontSize: 14,
+    color: colors.text,
+  },
+  itemSubtitle: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  noResults: {
+    padding: 16,
+    textAlign: "center",
+    color: colors.textMuted,
+    fontSize: 14,
   },
 });

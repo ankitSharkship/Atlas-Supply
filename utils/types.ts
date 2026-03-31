@@ -93,6 +93,8 @@ export interface Step3Form {
   amountTransferTo: AmountTransferTo | '';
   // Registered Vendor
   registeredVendorName: string;
+  vendorPan: string;
+  vendorGst: string;
   registeredVendorAmount: string;
   // Unregistered Vendor
   paymentVia: PaymentVia | '';

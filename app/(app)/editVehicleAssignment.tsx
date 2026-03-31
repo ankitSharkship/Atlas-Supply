@@ -3,11 +3,9 @@ import VehicleTypeSheet from "@/components/VehicleAssignment/vehicleTypeSheet";
 import VendorPickerSheet from "@/components/VehicleAssignment/vendorPickupSheet";
 import { Colors } from "@/constants/colors";
 import {
-  getVendorsLookup,
   updateVehicleAssignment,
   VehicleAssignment,
   Vendor,
-  VendorsLookupResponse,
   verifyVehicleApi,
 } from "@/lib/vehicleAssignmentService";
 import { Feather } from "@expo/vector-icons";
@@ -31,12 +29,12 @@ export default function VehicleAssignmentScreen() {
 const item: VehicleAssignment | null =
   typeof params.item === "string"
     ? JSON.parse(params.item)
-    : null; const handleClose = () => {
+    : null; 
+  const handleClose = () => {
     router.back();
   };
   const insets = useSafeAreaInsets();
 
-  const [vendors, setVendors] = useState<Vendor[]>([]);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const [vendorSearch, setVendorSearch] = useState("");
   const [vehicleAssigned, setVehicleAssigned] = useState(item?.vehicle_type);
@@ -102,16 +100,7 @@ const handleVehicleChange = (text: string) => {
   }
 };
   useEffect(() => {
-    const loadVendors = async () => {
-      const res: VendorsLookupResponse = await getVendorsLookup();
-
-      if (res.success) {
-        setVendors(res.data.vendors);
-        item?.enquiry_type === "ADHOC" ? setVendorRate(item?.vendor_rate?.toString() ?? "") : setVendorRate("");
-      }
-    };
-
-    loadVendors();
+    item?.enquiry_type === "ADHOC" ? setVendorRate(item?.vendor_rate?.toString() ?? "") : setVendorRate("");
   }, []);
 
   const formatINR = (value: number) =>
@@ -502,7 +491,6 @@ const handleVehicleChange = (text: string) => {
 </View>
       <VendorPickerSheet
   ref={vendorSheetRef}
-  vendors={vendors}
   onSelect={(vendor) => {
     setSelectedVendor(vendor);
     vendorSheetRef.current?.close();

@@ -114,20 +114,50 @@ export default function DashboardScreen() {
       pending: 0,
       roles: ["supply"],
     },
+    {
+      id: "vendorOnboardingForm",
+      title: "Vendor Onboarding Form",
+      description: "Add new Vendor",
+      icon: "user-plus",
+      iconLib: "feather",
+      color: Colors.primary,
+      bgColor: "#EBF1FF",
+      route: "/(app)/vendorOnboardingForm",
+      pending: 0,
+      roles: ["supply"],
+    },
+    {
+      id: "vehicleratesourcing",
+      title: "Vehicle Rate Sourcing",
+      description: "Vehicle Rate Sourcing",
+      icon: "trending-up",
+      iconLib: "feather",
+      color: Colors.primary,
+      bgColor: "#EBF1FF",
+      route: "/(app)/vehicleRateSourcing",
+      pending: 0,
+      roles: ["supply"],
+    },
   ];
 
   const visibleCards = allCards.filter((card) => {
-    if (!user?.role) return false;
+    if (!user?.pages) return false;
 
-    if (user.role === "ADMIN") {
-      return true;
+    // Check visibility based on decoded.pages as requested
+    const pageMapping: { [key: string]: string } = {
+      vehicleassignment: "vehicle_assignment",
+      loadingmemodetails: "loading_memo",
+      addintermitentcharges: "quick_add_intermittent",
+      vendorOnboardingForm: "quick_add_vendor",
+      vehicleratesourcing: "vehicle_sourcing",
+    };
+
+    const searchKey = pageMapping[card.id];
+    if (searchKey) {
+      return user.pages.includes(searchKey);
     }
 
-    if (user.role === "supply_employee") {
-      return card.id === "loadingmemodetails";
-    }
-
-    return false;
+    return true;
   });
   const handleCardPress = async (card: DashboardCard) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -143,7 +173,7 @@ export default function DashboardScreen() {
       ? "Administrator"
       : user?.role === "SUPPLY"
         ? "Supply Employee"
-        : "User";
+        : user?.role?.toLocaleUpperCase();
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
@@ -182,6 +212,12 @@ export default function DashboardScreen() {
           />
         }
       >
+        <View style={styles.infoCard}>
+          <Feather name="info" size={16} color={Colors.primary} />
+          <Text style={styles.infoText}>
+            Pull down to refresh pending counts.
+          </Text>
+        </View>
         <View style={styles.cardsGrid}>
           {visibleCards.map((card) => (
             <Pressable
@@ -210,7 +246,9 @@ export default function DashboardScreen() {
                     />
                   )}
                 </View>
-                {card.id !== "addintermitentcharges" && (
+                {card.id !== "addintermitentcharges" && 
+                  card.id !== "vendorOnboardingForm" && 
+                  card.id !== "vehicleratesourcing" && (
                   <View
                     style={[
                       styles.pendingBadge,
@@ -224,16 +262,16 @@ export default function DashboardScreen() {
 
               <View style={styles.cardBody}>
                 <Text style={styles.cardTitle}>{card.title}</Text>
-                <Text style={styles.cardDescription}>{card.description}</Text>
+                {/* <Text style={styles.cardDescription}>{card.description}</Text> */}
               </View>
 
-              <View style={styles.cardFooter}>
-                {card.id !== "addintermitentcharges" && (
+              {/* <View style={styles.cardFooter}>
+                {card.id !== "addintermitentcharges" && card.id !== "vendorOnboardingForm" && (
                   <Text style={[styles.pendingLabel, { color: card.color }]}>
                     {card.pending} pending
                   </Text>
                 )}
-                {card.id === "addintermitentcharges" && <Text></Text>}
+                {(card.id === "addintermitentcharges" || card.id === "vendorOnboardingForm" )&& <Text></Text>}
                 <View
                   style={[
                     styles.arrowCircle,
@@ -242,18 +280,12 @@ export default function DashboardScreen() {
                 >
                   <Feather name="arrow-right" size={14} color={card.color} />
                 </View>
-              </View>
+              </View> */}
             </Pressable>
           ))}
         </View>
 
-        <View style={styles.infoCard}>
-          <Feather name="info" size={16} color={Colors.primary} />
-          <Text style={styles.infoText}>
-            Pull down to refresh pending counts. All submissions are tracked in
-            real time.
-          </Text>
-        </View>
+        
       </ScrollView>
       <IntermittentChargeModal
         visible={modalVisible}
@@ -375,19 +407,23 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   cardsGrid: {
-    gap: 14,
-    marginBottom: 20,
-  },
-  card: {
-    backgroundColor: Colors.card,
-    borderRadius: 20,
-    padding: 20,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
-  },
+  flexDirection: 'row',      // NEW: Horizontal layout
+  flexWrap: 'wrap',          // NEW: Wrap to next row
+  gap: 14,
+  marginBottom: 20,
+},
+card: {
+  backgroundColor: Colors.card,
+  borderRadius: 20,
+  padding: 20,
+  shadowColor: Colors.primary,
+  shadowOffset: { width: 0, height: 3 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+  flexBasis: '48%',         // NEW: ~50% width minus gap (48% safe)
+  // flex: 1,              // Alternative: fills available space
+},
   cardPressed: {
     opacity: 0.92,
     transform: [{ scale: 0.98 }],
@@ -423,7 +459,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontFamily: "Inter_700Bold",
+    fontFamily: "Inter_600SemiBold",
     color: Colors.text,
     marginBottom: 4,
   },
@@ -459,6 +495,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#EBF1FF",
     borderRadius: 12,
     padding: 14,
+    marginBottom: 20
   },
   infoText: {
     flex: 1,

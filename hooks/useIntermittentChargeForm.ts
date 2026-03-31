@@ -30,6 +30,8 @@ const initialStep2: Step2Form = {
 const initialStep3: Step3Form = {
   amountTransferTo: "",
   registeredVendorName: "",
+  vendorPan: "",
+  vendorGst: "",
   registeredVendorAmount: "",
   paymentVia: "",
   unregVendorName: "",
@@ -179,8 +181,13 @@ export function useIntermittentChargeForm(onSuccess: () => void) {
   const validateStep4 = (): boolean => {
     const errs: FormErrors = {};
     const { approvedBy, approvalFile, mailSubject } = formState.step4;
+    const isCase2 =
+      formState.step1.vendorPaymentStatus === "PAYMENT TO VENDOR" &&
+      formState.step2.paymentAdjustment === "BILL TO CLIENT" &&
+      parseFloat(formState.step2.billToClientAmount || "0") >
+        parseFloat(formState.step3.registeredVendorAmount || "0");
     const showApprovedBy =
-      formState.step3.amountTransferTo !== "EXISTING EMPLOYEE";
+      formState.step3.amountTransferTo !== "EXISTING EMPLOYEE" && !isCase2;
     if (showApprovedBy && !approvedBy)
       errs.approvedBy = "Approved by is required";
     if (!approvalFile)
@@ -283,6 +290,12 @@ export function useIntermittentChargeForm(onSuccess: () => void) {
     
     if (step3.amountTransferTo === "REGISTERED VENDOR") {
       payload["name"] = step3.registeredVendorName;
+      if (step3.vendorPan) {
+        payload["vendor_pan"] = step3.vendorPan;
+      }
+      if (step3.vendorGst) {
+        payload["vendor_gst"] = step3.vendorGst;
+      }
       payload["amount"] = step3.registeredVendorAmount;
     } else if (step3.amountTransferTo === "UNREGISTERED VENDOR") {
       payload["payment_via"] = step3.paymentVia;
@@ -305,7 +318,14 @@ export function useIntermittentChargeForm(onSuccess: () => void) {
     }
 
     // Step 4
-    if (step3.amountTransferTo !== "EXISTING EMPLOYEE") {
+    const isCase2 =
+      formState.step1.vendorPaymentStatus === "PAYMENT TO VENDOR" &&
+      formState.step2.paymentAdjustment === "BILL TO CLIENT" &&
+      parseFloat(formState.step2.billToClientAmount || "0") >
+        parseFloat(formState.step3.registeredVendorAmount || "0");
+    const showApprovedBy =
+      formState.step3.amountTransferTo !== "EXISTING EMPLOYEE" && !isCase2;
+    if (showApprovedBy) {
       payload["approved_by"] = step4.approvedBy;
     }
     if (step4.approvalFile) payload["approval_file"] = step4.approvalFile;

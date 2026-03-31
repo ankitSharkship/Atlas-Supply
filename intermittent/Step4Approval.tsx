@@ -1,8 +1,10 @@
 import React from "react";
-import { StyleSheet, Text, View, Platform } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
 import {
   APPROVED_BY_OPTIONS,
   FormErrors,
+  Step1Form,
+  Step2Form,
   Step3Form,
   Step4Form,
 } from "../utils/types";
@@ -39,6 +41,8 @@ const pickFile = async (): Promise<any | null> => {
 
 interface Props {
   form: Step4Form;
+  step1: Step1Form; // Added
+  step2: Step2Form; // Added
   step3: Step3Form;
   errors: FormErrors;
   onChange: (fields: Partial<Step4Form>) => void;
@@ -51,6 +55,8 @@ interface Props {
 
 export const Step4Approval: React.FC<Props> = ({
   form,
+  step1, // Added
+  step2, // Added
   step3,
   errors,
   onChange,
@@ -60,8 +66,15 @@ export const Step4Approval: React.FC<Props> = ({
   isSubmitting,
   submitError,
 }) => {
-  // Hide "Approved By" if amount transfer is to EXISTING EMPLOYEE
-  const showApprovedBy = step3.amountTransferTo !== "EXISTING EMPLOYEE";
+  // Case 2 logic: PAYMENT TO VENDOR && BILL TO CLIENT && billToClientAmount > registeredVendorAmount
+  const isCase2 =
+    step1.vendorPaymentStatus === "PAYMENT TO VENDOR" &&
+    step2.paymentAdjustment === "BILL TO CLIENT" &&
+    parseFloat(step2.billToClientAmount || "0") >
+      parseFloat(step3.registeredVendorAmount || "0");
+
+  // Show "Approved By" if not targeting EXISTING EMPLOYEE, AND IF Case 2 is NOT met
+  const showApprovedBy = step3.amountTransferTo !== "EXISTING EMPLOYEE" && !isCase2;
 
   const approvedByOptions = APPROVED_BY_OPTIONS.map((v) => ({
     label: v,

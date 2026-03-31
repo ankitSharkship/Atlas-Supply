@@ -9,6 +9,7 @@ import {
   FileUploadButton,
   PhoneInput,
   NavButtons,
+  SearchableVendorPicker,
   colors,
 } from './SharedComponents';
 import {
@@ -79,6 +80,8 @@ export const Step3AmountTransfer: React.FC<Props> = ({
     onChange({
       amountTransferTo: v,
       registeredVendorName: '',
+      vendorPan: '',
+      vendorGst: '',
       registeredVendorAmount: '',
       paymentVia: '',
       unregVendorName: '',
@@ -123,11 +126,16 @@ export const Step3AmountTransfer: React.FC<Props> = ({
                 required
                 error={errors.registeredVendorName}
               >
-                <SelectDropdown<string>
-                  options={vendors}
+                <SearchableVendorPicker
                   value={form.registeredVendorName}
-                  onChange={v => onChange({ registeredVendorName: v })}
-                  placeholder="Select vendor..."
+                  onSelect={(v) =>
+                    onChange({
+                      registeredVendorName: v.vendor_company_name,
+                      vendorPan: v.pan_no,
+                      vendorGst: v.vendor_gst || "",
+                    })
+                  }
+                  placeholder="Search vendor..."
                   error={!!errors.registeredVendorName}
                 />
               </FormField>

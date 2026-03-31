@@ -11,6 +11,8 @@ interface AuthUser {
   role?: string;
   department?: string;
   zone: string[];
+  pages: string[];
+  transformedPages: any;
 }
 
 interface AuthContextType {
@@ -150,7 +152,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const pageCategories = buildPageCategories();
       const transformedPages = transformPages(decoded.pages, pageCategories);
-
+      console.log("Transformed pages:", transformedPages);
+      console.log("pageCategories", pageCategories);
+      console.log("role", decoded.role);
+      console.log(decoded);
+      
+      console.log('{}}}}}}}}}}}}}}}}}}}{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}');
       const authUser: AuthUser = {
         email: normalizedEmail,
         token: data.token,
@@ -158,6 +165,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role: decoded.role,
         department: decoded.department,
         zone: decoded.zone || [],
+        pages: decoded.pages || [],
+        transformedPages: transformedPages
       };
 
       await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser));

@@ -92,7 +92,7 @@ export function VehicleAssignmentCard({
               color={Colors.textLight}
             />
             <Text style={cardStyles.footerText}>
-              {item.vendor_name ?? "Vendor NA"}
+              {item.vendor_name ?? "Vendor Name: NA"}
             </Text>
           </View>
         </View>

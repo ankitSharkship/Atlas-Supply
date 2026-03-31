@@ -111,24 +111,24 @@ export interface MaterialDimensions {
   height: number | null;
 }
 
-export interface DistanceInfo {
-  api_used: string;
-  route_type: string;
+// export interface DistanceInfo {
+//   api_used: string;
+//   route_type: string;
 
-  distance_km: number;
-  distance_miles: number;
-  distance_text: string;
+//   distance_km: number;
+//   distance_miles: number;
+//   distance_text: string;
 
-  duration_hours: number;
-  duration_minutes: number;
-  duration_text: string;
+//   duration_hours: number;
+//   duration_minutes: number;
+//   duration_text: string;
 
-  duration_in_traffic_minutes: number | null;
-  duration_in_traffic_text: string;
+//   duration_in_traffic_minutes: number | null;
+//   duration_in_traffic_text: string;
 
-  from_coordinates: Coordinates;
-  to_coordinates: Coordinates;
-}
+//   from_coordinates: Coordinates;
+//   to_coordinates: Coordinates;
+// }
 
 export interface DistanceInfo {
   api_used: string;
@@ -326,9 +326,11 @@ export const getVehicleAssignmentDisplay = async (
 };
 
 export const getVendorsLookup = async (
+  q: string = "",
   limit: number = 50,
 ): Promise<VendorsLookupResponse> => {
   return ApiService.get<VendorsLookupResponse>("/api/vendors_lookup", {
+    q,
     limit: 50,
   });
 };

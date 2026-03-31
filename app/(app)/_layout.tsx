@@ -20,6 +20,7 @@ export default function AppLayout() {
       <Stack.Screen name="vehicleAssignment" />
       <Stack.Screen name="editVehicleAssignment" />
       {/* <Stack.Screen name="addIntermitentCharges" /> */}
+      <Stack.Screen name="vendorOnboardingForm"/>
     </Stack>
   );
 }

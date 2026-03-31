@@ -1,9 +1,10 @@
 // components/VendorPickerSheet.tsx
 import { Colors } from "@/constants/colors";
-import { Vendor } from "@/lib/vehicleAssignmentService";
+import { getVendorsLookup, Vendor } from "@/lib/vehicleAssignmentService";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import React, { forwardRef, useMemo, useState } from "react";
+import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   Pressable,
   StyleSheet,
@@ -13,18 +14,44 @@ import {
 } from "react-native";
 
 interface Props {
-  vendors: Vendor[];
   onSelect: (vendor: Vendor) => void;
 }
 
 const VendorPickerSheet = forwardRef<BottomSheet, Props>(
-  ({ vendors, onSelect }, ref) => {
+  ({ onSelect }, ref) => {
     const snapPoints = useMemo(() => ["60%", "90%"], []);
     const [search, setSearch] = useState("");
+    const [vendors, setVendors] = useState<Vendor[]>([]);
+    const [loading, setLoading] = useState(false);
+    const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const filtered = vendors.filter((v) =>
-      v.vendor_company_name.toLowerCase().includes(search.toLowerCase())
-    );
+    const fetchVendors = useCallback(async (q: string) => {
+      setLoading(true);
+      try {
+        const res = await getVendorsLookup(q);
+        if (res?.success) {
+          setVendors(res.data.vendors);
+        }
+      } catch (e) {
+        console.error("Failed to load vendors", e);
+      } finally {
+        setLoading(false);
+      }
+    }, []);
+
+    // Initial load with empty query
+    useEffect(() => {
+      fetchVendors("");
+    }, [fetchVendors]);
+
+    // Debounce search
+    const handleSearch = (text: string) => {
+      setSearch(text);
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      debounceTimer.current = setTimeout(() => {
+        fetchVendors(text);
+      }, 500);
+    };
 
     return (
       <BottomSheet
@@ -41,34 +68,45 @@ const VendorPickerSheet = forwardRef<BottomSheet, Props>(
             style={styles.search}
             placeholder="Search vendor..."
             value={search}
-            onChangeText={setSearch}
+            onChangeText={handleSearch}
+            autoCapitalize="none"
           />
 
-          <FlatList
-            data={filtered}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <Pressable
-                style={styles.vendorItem}
-                onPress={() => onSelect(item)}
-              >
-                <View style={styles.vendorRow}>
-                  <View style={styles.dot} />
+          {loading ? (
+            <ActivityIndicator
+              style={{ marginTop: 20 }}
+              color={Colors.primary}
+            />
+          ) : (
+            <FlatList
+              data={vendors}
+              keyExtractor={(item) => item.id.toString()}
+              ListEmptyComponent={
+                <Text style={styles.emptyText}>No vendors found</Text>
+              }
+              renderItem={({ item }) => (
+                <Pressable
+                  style={styles.vendorItem}
+                  onPress={() => onSelect(item)}
+                >
+                  <View style={styles.vendorRow}>
+                    <View style={styles.dot} />
 
-                  <View>
-                    <Text style={styles.vendorName}>
-                      {item.vendor_company_name}
-                    </Text>
+                    <View>
+                      <Text style={styles.vendorName}>
+                        {item.vendor_company_name}
+                      </Text>
 
-                    <Text style={styles.vendorMeta}>
-                      {item.primary_mobile_no}
-                      {item.vendor_gst ? ` • ${item.vendor_gst}` : ""}
-                    </Text>
+                      <Text style={styles.vendorMeta}>
+                        {item.primary_mobile_no}
+                        {item.vendor_gst ? ` • ${item.vendor_gst}` : ""}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              </Pressable>
-            )}
-          />
+                </Pressable>
+              )}
+            />
+          )}
         </BottomSheetView>
       </BottomSheet>
     );
@@ -95,6 +133,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     marginBottom: 12,
+  },
+
+  emptyText: {
+    textAlign: "center",
+    color: Colors.textSecondary,
+    marginTop: 20,
+    fontSize: 14,
   },
 
   vendorItem: {

@@ -49,28 +49,6 @@ export const IntermittentChargeModal: React.FC<Props> = ({
     onClose();
   });
 
-  const [vendorOptions, setVendorOptions] = useState<
-    { label: string; value: string }[]
-  >([]);
-
-  useEffect(() => {
-    if (visible) {
-      (async () => {
-        try {
-          const res = await getVendorsLookup();
-          if (res?.success) {
-            const opts = res.data.vendors.map((v: any) => ({
-              label: v.vendor_company_name,
-              value: v.vendor_company_name, // use name as value based on your Form state
-            }));
-            setVendorOptions(opts);
-          }
-        } catch (e) {
-          console.error("Failed to load vendors", e);
-        }
-      })();
-    }
-  }, [visible]);
 
   // Sync VENDOR RECOVERY locked fields into form state when step changes
   useEffect(() => {
@@ -121,7 +99,6 @@ export const IntermittentChargeModal: React.FC<Props> = ({
             onCancel={onClose}
             onPrev={goPrev}
             onNext={goNext}
-            vendors={vendorOptions}
           />
         );
       case 4:
@@ -134,6 +111,8 @@ export const IntermittentChargeModal: React.FC<Props> = ({
             onCancel={onClose}
             onPrev={goPrev}
             onSubmit={handleSubmit}
+            step1={formState.step1}
+            step2={formState.step2}
             isSubmitting={isSubmitting}
             submitError={submitError}
           />
