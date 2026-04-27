@@ -56,7 +56,7 @@ export type VendorPaymentStatus =
   | 'NOT PAID TO VENDOR'
   | 'VENDOR RECOVERY';
 
-export type PaymentAdjustmentOption = 'BILL TO CLIENT' | 'NOT BILL TO CLIENT' | 'AWAITING CLIENT APPROVAL';
+export type PaymentAdjustmentOption = 'BILL TO CLIENT' | 'NOT BILL TO CLIENT' | 'Awaiting Client Approval';
 
 export type ChargeCategory =
   | 'LOADING CHARGES'
@@ -140,7 +140,7 @@ export const VENDOR_PAYMENT_STATUSES: VendorPaymentStatus[] = [
 export const PAYMENT_ADJUSTMENT_OPTIONS: PaymentAdjustmentOption[] = [
   'BILL TO CLIENT',
   'NOT BILL TO CLIENT',
-  'AWAITING CLIENT APPROVAL'
+  'Awaiting Client Approval'
 ];
 
 export const CHARGE_CATEGORIES: ChargeCategory[] = [

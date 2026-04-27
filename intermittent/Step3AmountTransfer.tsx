@@ -69,7 +69,7 @@ export const Step3AmountTransfer: React.FC<Props> = ({
   vendors = [],
 }) => {
   const isVendorRecovery = step1.vendorPaymentStatus === 'VENDOR RECOVERY';
-  const isAwaitingClientApproval = step2.paymentAdjustment === 'AWAITING CLIENT APPROVAL';
+  const isAwaitingClientApproval = step2.paymentAdjustment === 'Awaiting Client Approval';
   const transferOptions = AMOUNT_TRANSFER_OPTIONS.map(v => ({
     label: v,
     value: v,
@@ -420,17 +420,13 @@ export const Step3AmountTransfer: React.FC<Props> = ({
         </SectionCard>
       )}
 
-     {isAwaitingClientApproval ?( <NavButtons
+      <NavButtons
         onCancel={onCancel}
         onPrev={onPrev}
-         onSubmit={ onSubmit}
+        onSubmit={isAwaitingClientApproval ? onSubmit : undefined}
+        onNext={!isAwaitingClientApproval ? onNext : undefined}
         showPrev
-      />) : ( <NavButtons
-        onCancel={onCancel}
-        onPrev={onPrev}
-        onSubmit={ onNext}
-        showPrev
-      />)}
+      />
 
     </View>
   );

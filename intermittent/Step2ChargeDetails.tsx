@@ -38,8 +38,15 @@ export const Step2ChargeDetails: React.FC<Props> = ({
   const isVendorRecovery = step1.vendorPaymentStatus === 'VENDOR RECOVERY';
 
   // For VENDOR RECOVERY: force NOT BILL TO CLIENT + OTHERS (locked)
-  const paymentAdjOptions = PAYMENT_ADJUSTMENT_OPTIONS.map(v => ({
-    label: v,
+  const formatLabel = (v: string) =>
+    v
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
+  const paymentAdjOptions = PAYMENT_ADJUSTMENT_OPTIONS.map((v) => ({
+    label: formatLabel(v),
     value: v,
   }));
 
@@ -96,6 +103,21 @@ export const Step2ChargeDetails: React.FC<Props> = ({
 
       {/* Bill To Client Amount — only if BILL TO CLIENT selected */}
       {(isVendorRecovery ? false : form.paymentAdjustment === 'BILL TO CLIENT') && (
+        <FormField
+          label="Bill To Client Amount"
+          required
+          error={errors.billToClientAmount}
+        >
+          <StyledInput
+            value={form.billToClientAmount}
+            onChangeText={v => onChange({ billToClientAmount: v })}
+            placeholder="Enter amount"
+            keyboardType="numeric"
+            error={!!errors.billToClientAmount}
+          />
+        </FormField>
+      )}
+        {(isVendorRecovery ? false : form.paymentAdjustment === 'Awaiting Client Approval') && (
         <FormField
           label="Bill To Client Amount"
           required

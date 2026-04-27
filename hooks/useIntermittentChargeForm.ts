@@ -129,7 +129,11 @@ export function useIntermittentChargeForm(onSuccess: () => void) {
       formState.step2;
     if (!paymentAdjustment)
       errs.paymentAdjustment = "Payment adjustment is required";
-    if (paymentAdjustment === "BILL TO CLIENT" && !billToClientAmount.trim())
+    if (
+      (paymentAdjustment === "BILL TO CLIENT" ||
+        paymentAdjustment === "Awaiting Client Approval") &&
+      !billToClientAmount.trim()
+    )
       errs.billToClientAmount = "Bill to client amount is required";
     if (!chargeCategory) errs.chargeCategory = "Charge category is required";
     setErrors(errs);
@@ -274,7 +278,8 @@ export function useIntermittentChargeForm(onSuccess: () => void) {
     payload["charge_category"] = categoryMap[step2.chargeCategory] || step2.chargeCategory;
     
     if (
-      step2.paymentAdjustment === "BILL TO CLIENT" &&
+      (step2.paymentAdjustment === "BILL TO CLIENT" ||
+        step2.paymentAdjustment === "Awaiting Client Approval") &&
       step2.billToClientAmount
     ) {
       payload["charge_amount"] = step2.billToClientAmount;
@@ -317,26 +322,31 @@ export function useIntermittentChargeForm(onSuccess: () => void) {
       payload["amount"] = step3.employeeAmount;
     }
 
-    // Step 4
-    const isCase2 =
-      formState.step1.vendorPaymentStatus === "PAYMENT TO VENDOR" &&
-      formState.step2.paymentAdjustment === "BILL TO CLIENT" &&
-      parseFloat(formState.step2.billToClientAmount || "0") >
-        parseFloat(formState.step3.registeredVendorAmount || "0");
-    const showApprovedBy =
-      formState.step3.amountTransferTo !== "EXISTING EMPLOYEE" && !isCase2;
-    if (showApprovedBy) {
-      payload["approved_by"] = step4.approvedBy;
+    // Step 4 - Only if NOT Awaiting Client Approval
+    const isAwaitingClientApproval = step2.paymentAdjustment === "Awaiting Client Approval";
+    if (!isAwaitingClientApproval) {
+      const isCase2 =
+        formState.step1.vendorPaymentStatus === "PAYMENT TO VENDOR" &&
+        formState.step2.paymentAdjustment === "BILL TO CLIENT" &&
+        parseFloat(formState.step2.billToClientAmount || "0") >
+          parseFloat(formState.step3.registeredVendorAmount || "0");
+      const showApprovedBy =
+        formState.step3.amountTransferTo !== "EXISTING EMPLOYEE" && !isCase2;
+      if (showApprovedBy) {
+        payload["approved_by"] = step4.approvedBy;
+      }
+      if (step4.approvalFile) payload["approval_file"] = step4.approvalFile;
+      payload["mail_subject"] = step4.mailSubject;
+      if (step4.finalRemarks.trim()) payload["remarks"] = step4.finalRemarks;
     }
-    if (step4.approvalFile) payload["approval_file"] = step4.approvalFile;
-    payload["mail_subject"] = step4.mailSubject;
-    if (step4.finalRemarks.trim()) payload["remarks"] = step4.finalRemarks;
 
     return payload;
   };
 
   const handleSubmit = async () => {
-    if (!validateStep4()) return;
+    const isAwaitingClientApproval = formState.step2.paymentAdjustment === "Awaiting Client Approval";
+    const isValid = isAwaitingClientApproval ? validateStep3() : validateStep4();
+    if (!isValid) return;
     setIsSubmitting(true);
     setSubmitError(null);
     try {
