@@ -1,4 +1,5 @@
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import UpdateManager from "@/components/UpdateManager";
 import { AuthProvider } from "@/context/AuthContext";
 import {
   Inter_400Regular,
@@ -44,11 +45,13 @@ export default function RootLayout() {
   return (
     <ErrorBoundary>
         <AuthProvider>
+          <UpdateManager>
           <GestureHandlerRootView>
             <KeyboardProvider>
               <RootLayoutNav />
             </KeyboardProvider>
           </GestureHandlerRootView>
+          </UpdateManager>
         </AuthProvider>
     </ErrorBoundary>
   );

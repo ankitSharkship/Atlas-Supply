@@ -1,21 +1,20 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import {
-  FormField,
-  StyledInput,
-  SelectDropdown,
-  NavButtons,
-  colors,
-} from './SharedComponents';
-import {
-  Step1Form,
-  Step2Form,
+  CHARGE_CATEGORIES,
+  ChargeCategory,
   FormErrors,
   PAYMENT_ADJUSTMENT_OPTIONS,
-  CHARGE_CATEGORIES,
   PaymentAdjustmentOption,
-  ChargeCategory,
+  Step1Form,
+  Step2Form,
 } from '../utils/types';
+import {
+  FormField,
+  NavButtons,
+  SelectDropdown,
+  StyledInput
+} from './SharedComponents';
 
 interface Props {
   form: Step2Form;

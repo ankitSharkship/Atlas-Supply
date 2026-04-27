@@ -3,6 +3,7 @@ import { VehicleAssignment } from "@/lib/vehicleAssignmentService";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { AgeingBadge } from "../Common/AgeingBadge";
 export function VehicleAssignmentCard({
   item,
   onAction,
@@ -23,17 +24,16 @@ export function VehicleAssignmentCard({
   return (
     <Pressable style={cardStyles.card} onPress={() => onAction(item)}>
       {/* Top */}
-      <View style={cardStyles.cardTop}>
-        <View style={cardStyles.cardTopLeft}>
+      <View style={cardStyles.header}>
+        <View style={cardStyles.headerTop}>
           <Text style={cardStyles.enquiryNo}>{item.enquiry_no}</Text>
-          <Text style={cardStyles.dateText}>
-            {dateStr} {timeStr}
-          </Text>
+          <View style={cardStyles.statusBadge}>
+            <Text style={cardStyles.statusText}>{item.status}</Text>
+          </View>
         </View>
-
-        <View style={cardStyles.statusBadge}>
-          <Text style={cardStyles.statusText}>{item.status}</Text>
-        </View>
+        
+        <Text style={cardStyles.dateText}>Required: {dateStr} {timeStr}</Text>
+        <AgeingBadge ageing={item.ageing} pendingSince={item.pending_since} />
       </View>
 
       {/* Body */}
@@ -80,6 +80,11 @@ export function VehicleAssignmentCard({
             </Text>
           </View>
         </View>
+
+        <View style={cardStyles.orderRow}>
+          <Feather name="hash" size={13} color={Colors.textSecondary} />
+          <Text style={cardStyles.orderText}>Order Number: {item.order_number || "NA"}</Text>
+        </View>
       </View>
 
       {/* Footer */}
@@ -124,29 +129,46 @@ const cardStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  cardTop: {
+  header: {
+    marginBottom: 14,
+    gap: 8,
+  },
+  headerTop: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 12,
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
   },
-  cardTopLeft: { gap: 2 },
+  headerTopLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  vSep: {
+    width: 1,
+    height: 12,
+    backgroundColor: Colors.border,
+    marginHorizontal: 2,
+  },
   enquiryNo: {
     fontSize: 15,
     fontFamily: "Inter_700Bold",
     color: Colors.primary,
+    marginRight: 8,
   },
   dateText: {
-    fontSize: 11,
-    fontFamily: "Inter_400Regular",
-    color: Colors.textLight,
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+    color: Colors.textSecondary,
+    marginBottom: 2,
   },
   statusBadge: {
     backgroundColor: "#F3F0FF",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 20,
-    maxWidth: 200,
+    flexShrink: 1,
   },
   statusText: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#7C3AED" },
   cardBody: { gap: 10, marginBottom: 14 },
@@ -171,6 +193,18 @@ const cardStyles = StyleSheet.create({
     color: Colors.textSecondary,
     flex: 1,
   },
+  orderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 4,
+    marginTop: 4,
+  },
+  orderText: {
+    fontSize: 12,
+    fontFamily: "Inter_500Medium",
+    color: Colors.textSecondary,
+  },
   cardFooter: {
     flexDirection: "row",
     alignItems: "center",
@@ -191,10 +225,11 @@ const cardStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    paddingHorizontal: 14,
-    height: 36,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 10,
     backgroundColor: Colors.primary,
+    flexShrink: 1,
   },
   uploadBtnDone: {
     backgroundColor: Colors.success,
@@ -203,5 +238,6 @@ const cardStyles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Inter_600SemiBold",
     color: Colors.white,
+    textAlign: "center",
   },
 });

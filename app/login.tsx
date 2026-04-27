@@ -85,6 +85,7 @@ export default function LoginScreen() {
               style={{ width: "100%", height: "100%", borderRadius: 20 }}
               resizeMode="contain"
             />
+
           </View>
           <Text style={styles.appName}>Atlas Supply</Text>
         </View>
@@ -92,6 +93,7 @@ export default function LoginScreen() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Welcome Back</Text>
           <Text style={styles.cardSubtitle}>Sign in to your account</Text>
+
 
           <View style={styles.fieldContainer}>
             <Text style={styles.label}>Email Address</Text>

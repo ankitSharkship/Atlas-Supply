@@ -19,6 +19,7 @@
     },
     "android": {
       "package": "com.sharkship.atlassupply",
+      "newArchEnabled": true,
       "adaptiveIcon": {
         "backgroundColor": "#1A3C6E",
         "foregroundImage": "./assets/images/atlas-app.png"
@@ -41,6 +42,18 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ea935923-ea57-4020-a106-cd654a1688ee"
+      }
+    },
+    "owner": "ankitsharkshipdevs-organization",
+    "updates": {
+      "url": "https://u.expo.dev/ea935923-ea57-4020-a106-cd654a1688ee",
+       "checkAutomatically": "ON_LOAD",
+  "fallbackToCacheTimeout": 0
+    },
+    "runtimeVersion": "1.0.0"
   }
 }

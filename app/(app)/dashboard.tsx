@@ -170,9 +170,9 @@ export default function DashboardScreen() {
 
   const roleLabel =
     user?.role === "ADMIN"
-      ? "Administrator"
+      ? "ADMIN"
       : user?.role === "SUPPLY"
-        ? "Supply Employee"
+        ? "SUPPLY"
         : user?.role?.toLocaleUpperCase();
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
@@ -182,7 +182,7 @@ export default function DashboardScreen() {
     <View style={[styles.root, { backgroundColor: Colors.background }]}>
       <View style={[styles.header, { paddingTop: topPad + 16 }]}>
         <View style={styles.headerLeft}>
-          <Text style={styles.greeting}>Hello,</Text>
+          <Text style={styles.greeting}>HELLO,</Text>
           <Text style={styles.userName} numberOfLines={1}>
             {user?.email.split("@")[0]}
           </Text>

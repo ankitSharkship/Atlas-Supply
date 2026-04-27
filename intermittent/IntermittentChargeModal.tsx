@@ -94,11 +94,13 @@ export const IntermittentChargeModal: React.FC<Props> = ({
           <Step3AmountTransfer
             form={formState.step3}
             step1={formState.step1}
+            step2={formState.step2}
             errors={errors}
             onChange={updateStep3}
             onCancel={onClose}
             onPrev={goPrev}
             onNext={goNext}
+            onSubmit={handleSubmit}
           />
         );
       case 4:

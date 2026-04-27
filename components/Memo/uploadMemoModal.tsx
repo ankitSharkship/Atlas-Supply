@@ -18,6 +18,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { AgeingBadge } from "../Common/AgeingBadge";
 
 interface PickedFile {
   uri: string;
@@ -95,8 +96,8 @@ export function UploadMemoModal({
       const result: UploadLoadingMemoResponse = await uploadLoadingMemo(
         task.enquiry_no,
         pickedFile.uri,
-        pickedFile.name,
-        pickedFile.mimeType,
+        task.vehicle_no,
+        task.lorry_receipts || [],
       );
 
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -188,6 +189,11 @@ export function UploadMemoModal({
             </View>
             <View style={uploadStyles.infoDivider} />
             <View style={uploadStyles.infoRow}>
+              <Text style={uploadStyles.infoLabel}>Order Number</Text>
+              <Text style={uploadStyles.infoValue}>{task.order_number || "NA"}</Text>
+            </View>
+            <View style={uploadStyles.infoDivider} />
+            <View style={uploadStyles.infoRow}>
               <Text style={uploadStyles.infoLabel}>Lorry Receipt Date</Text>
               <Text
                 style={uploadStyles.infoValue}
@@ -206,6 +212,20 @@ export function UploadMemoModal({
             <View style={uploadStyles.infoRow}>
               <Text style={uploadStyles.infoLabel}>Final Rate</Text>
               <Text style={uploadStyles.infoValue}>{task.final_rate}</Text>
+            </View>
+            <View style={uploadStyles.infoDivider} />
+            <View style={uploadStyles.infoRow}>
+              <Text style={uploadStyles.infoLabel}>Lorry Receipts</Text>
+              <Text style={uploadStyles.infoValue}>
+                {task.lorry_receipts?.join(", ") || "NA"}
+              </Text>
+            </View>
+            <View style={uploadStyles.infoDivider} />
+            <View style={uploadStyles.infoRow}>
+              <Text style={uploadStyles.infoLabel}>Ageing Status</Text>
+              <View style={{ flex: 1, alignItems: 'flex-start' }}>
+                <AgeingBadge ageing={task.ageing} pendingSince={task.pending_since} />
+              </View>
             </View>
           </View>
 

@@ -19,6 +19,9 @@ export interface LoadingMemoData {
   lorry_receipts: string[];
   lorry_receipt_date: string;
   vehicle_assigned: string;
+  order_number: string | null;
+  pending_since: string;
+  ageing: string;
 }
 
 export interface LoadingMemoResponse {
@@ -52,48 +55,19 @@ export interface UploadLoadingMemoResponse {
   };
 }
 
-const UPLOAD_ERROR_MESSAGES: Record<number, string> = {
-  400: "Invalid request — enquiry number or file is missing.",
-  401: "Session expired. Please log in again.",
-  404: "Enquiry not found. The provided enquiry number does not exist.",
-  500: "A server error occurred. Please try again later.",
-};
-
 export const uploadLoadingMemo = async (
   enquiryNo: string,
   fileUri: string,
-  fileName: string,
-  mimeType: string,
+  vehicleNo: string,
+  lorryReceipts: string[],
 ): Promise<UploadLoadingMemoResponse> => {
-  const headers = await ApiService.getAuthHeaderPublic();
-
-  const formData = new FormData();
-  formData.append("enquiry_no", enquiryNo);
-  formData.append("loading_memo", {
-    uri: fileUri,
-    name: fileName,
-    type: mimeType,
-  } as any);
-
-  const response = await fetch(
-    `${process.env.EXPO_PUBLIC_API_URL}/api/loading_memo_upload`,
+  return ApiService.postFormData<UploadLoadingMemoResponse>(
+    "/api/loading_memo_upload",
     {
-      method: "POST",
-      headers,
-      body: formData,
+      enquiry_no: enquiryNo,
+      loading_memo: fileUri,
+      vehicle_no: vehicleNo,
+      lorry_receipts: lorryReceipts.join(", "),
     },
   );
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    const friendlyMessage =
-      UPLOAD_ERROR_MESSAGES[response.status] ||
-      data.message ||
-      data.error ||
-      `Upload failed (status ${response.status})`;
-    throw new Error(friendlyMessage);
-  }
-
-  return data as UploadLoadingMemoResponse;
 };

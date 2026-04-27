@@ -1,25 +1,25 @@
 import React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import {
-  FormField,
-  StyledInput,
-  SelectDropdown,
-  ToggleTabs,
-  SectionCard,
-  FileUploadButton,
-  PhoneInput,
-  NavButtons,
-  SearchableVendorPicker,
-  colors,
-} from './SharedComponents';
-import {
-  Step1Form,
-  Step3Form,
-  FormErrors,
   AMOUNT_TRANSFER_OPTIONS,
   AmountTransferTo,
+  FormErrors,
   PaymentVia,
+  Step1Form,
+  Step2Form,
+  Step3Form,
 } from '../utils/types';
+import {
+  FileUploadButton,
+  FormField,
+  NavButtons,
+  PhoneInput,
+  SearchableVendorPicker,
+  SectionCard,
+  SelectDropdown,
+  StyledInput,
+  ToggleTabs
+} from './SharedComponents';
 
 import * as DocumentPicker from "expo-document-picker";
 
@@ -46,7 +46,9 @@ const pickFile = async (): Promise<any | null> => {
 interface Props {
   form: Step3Form;
   step1: Step1Form;
+  step2: Step2Form;
   errors: FormErrors;
+  onSubmit: () => void;
   onChange: (fields: Partial<Step3Form>) => void;
   onCancel: () => void;
   onPrev: () => void;
@@ -57,15 +59,17 @@ interface Props {
 export const Step3AmountTransfer: React.FC<Props> = ({
   form,
   step1,
+  step2,
   errors,
   onChange,
   onCancel,
   onPrev,
   onNext,
+  onSubmit,
   vendors = [],
 }) => {
   const isVendorRecovery = step1.vendorPaymentStatus === 'VENDOR RECOVERY';
-
+  const isAwaitingClientApproval = step2.paymentAdjustment === 'AWAITING CLIENT APPROVAL';
   const transferOptions = AMOUNT_TRANSFER_OPTIONS.map(v => ({
     label: v,
     value: v,
@@ -416,12 +420,18 @@ export const Step3AmountTransfer: React.FC<Props> = ({
         </SectionCard>
       )}
 
-      <NavButtons
+     {isAwaitingClientApproval ?( <NavButtons
         onCancel={onCancel}
         onPrev={onPrev}
-        onNext={onNext}
+         onSubmit={ onSubmit}
         showPrev
-      />
+      />) : ( <NavButtons
+        onCancel={onCancel}
+        onPrev={onPrev}
+        onSubmit={ onNext}
+        showPrev
+      />)}
+
     </View>
   );
 };

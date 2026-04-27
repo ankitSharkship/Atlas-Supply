@@ -1,6 +1,7 @@
 import { ApiService } from "./api-service";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+// const API_BASE_URL = 'http://192.168.1.64:8000';
+const API_BASE_URL = 'https://atlas.logipod.in';
 const AUTH_STORAGE_KEY = "auth_user";
 
 export interface VehicleAssignmentDisplayRequest {
@@ -86,6 +87,8 @@ export interface VehicleAssignment {
   order_number: string;
 
   status: string;
+  pending_since: string;
+  ageing: string;
 
   loading_points: any[];
   unloading_points: any[];
@@ -103,6 +106,9 @@ export interface VehicleAssignment {
   driver_mobile_no: string | null;
 
   distance_info: DistanceInfo;
+  vendor_gst: string | null;
+  vendor_pan: string | null;
+  advance_percentage: string | null;
 }
 
 export interface MaterialDimensions {
@@ -240,6 +246,9 @@ export interface UpdateVehicleAssignmentRequest {
   rate_uom_type?: "FTL" | "PMT";
 
   vendor_rate?: number;
+  advance_percentage: number | null;
+  vendor_gst?: string | null;
+  vendor_pan?: string | null;
 }
 
 export interface UpdateVehicleAssignmentSuccessResponse {

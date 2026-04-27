@@ -1,0 +1,40 @@
+{
+  "cli": {
+    "version": ">= 16.32.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "channel": "development"
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview"
+    },
+    "production": {
+      "autoIncrement": true,
+      "channel": "production",
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+         "EXPO_PUBLIC_API_URL": "https://atlas.logipod.in",
+         "EXPO_PUBLIC_ULIP_API_BASE_URL": "https://atlas.logipod.in",
+        "EXPO_PUBLIC_EWB_BASE_URL": "https://api.whitebooks.in/ewaybillapi/v1.03",
+        "EXPO_PUBLIC_EWB_EMAIL": "connectwithlogipod@gmail.com",
+        "EXPO_PUBLIC_EWB_USERNAME": "Ashok_logi_API_bvm",
+        "EXPO_PUBLIC_EWB_PASSWORD": "Logipod@#12345",
+        "EXPO_PUBLIC_EWB_IP_ADDRESS": "13.202.73.82",
+        "EXPO_PUBLIC_EWB_CLIENT_ID": "EWBP42c05bd4-f7a7-456d-b5b2-b043c79d7b74",
+        "EXPO_PUBLIC_EWB_CLIENT_SECRET": "EWBPba531f90-bae9-420e-9a5b-7f4a87e73f03",
+        "EXPO_PUBLIC_EWB_GSTIN": "06AAFCL3674H1ZE",
+        "DEFAULT_TIMEOUT_MS": "15000"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

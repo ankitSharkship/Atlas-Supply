@@ -1,0 +1,242 @@
+import Colors from "@/constants/colors";
+import { RateSourcingItem } from "@/lib/rateSourcingService";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import React from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { AgeingBadge } from "../Common/AgeingBadge";
+
+export function RateSourcingCard({
+  item,
+  onAction,
+}: {
+  item: RateSourcingItem;
+  onAction: (item: RateSourcingItem) => void;
+}) {
+  const requiredDate = new Date(item.required_on_date);
+
+  const dateStr = `${String(requiredDate.getDate()).padStart(2, "0")}-${String(
+    requiredDate.getMonth() + 1,
+  ).padStart(2, "0")}-${requiredDate.getFullYear()}`;
+
+  const timeStr = `${String(requiredDate.getHours()).padStart(2, "0")}:${String(
+    requiredDate.getMinutes(),
+  ).padStart(2, "0")}`;
+
+  return (
+    <Pressable style={cardStyles.card} onPress={() => onAction(item)}>
+      {/* Top */}
+      <View style={cardStyles.header}>
+        <View style={cardStyles.headerTop}>
+          <Text style={cardStyles.enquiryNo}>{item.enquiry_no}</Text>
+          <View style={cardStyles.statusBadge}>
+            <Text style={cardStyles.statusText}>{item.status}</Text>
+          </View>
+        </View>
+        <Text style={cardStyles.dateText}>Required: {dateStr} {timeStr}</Text>
+        <AgeingBadge ageing={item.ageing} pendingSince={item.pending_since} />
+      </View>
+
+      {/* Body */}
+      <View style={cardStyles.cardBody}>
+        {/* Customer */}
+        <View style={cardStyles.rowInfo}>
+          <Feather name="briefcase" size={13} color={Colors.textSecondary} />
+          <Text style={cardStyles.customerName} numberOfLines={2}>
+            {item.customer_name}
+          </Text>
+        </View>
+
+        {/* Enquiry Type & Vehicle Type */}
+        <View style={cardStyles.rowInfo}>
+          <MaterialCommunityIcons
+            name="truck-outline"
+            size={13}
+            color={Colors.textSecondary}
+          />
+          <Text style={cardStyles.infoText}>
+            {item.vehicle_type} • {item.enquiry_type}
+          </Text>
+        </View>
+
+        {/* Route */}
+        <View style={cardStyles.routeRow}>
+          <View style={cardStyles.routePoint}>
+            <View
+              style={[cardStyles.dot, { backgroundColor: Colors.success }]}
+            />
+            <Text style={cardStyles.routeText} numberOfLines={1}>
+              {item.from_location}
+            </Text>
+          </View>
+
+          <MaterialCommunityIcons
+            name="arrow-right"
+            size={16}
+            color={Colors.textLight}
+          />
+
+          <View style={cardStyles.routePoint}>
+            <View style={[cardStyles.dot, { backgroundColor: Colors.error }]} />
+            <Text style={cardStyles.routeText} numberOfLines={1}>
+              {item.to_location}
+            </Text>
+          </View>
+        </View>
+        
+        {/* Distance Info if available */}
+        {item.distance_info && (
+            <View style={cardStyles.distanceInfo}>
+                 <Feather name="map-pin" size={12} color={Colors.textLight} />
+                 <Text style={cardStyles.distanceText}>
+                     {item.distance_info.distance_text} • {item.distance_info.duration_text}
+                 </Text>
+            </View>
+        )}
+      </View>
+
+      {/* Footer */}
+      <View style={cardStyles.cardFooter}>
+        <View style={cardStyles.footerLeft}>
+          <View style={cardStyles.footerItem}>
+             <Text style={cardStyles.targetRateLabel}>Target:</Text>
+             <Text style={cardStyles.targetRateValue}>
+                 {item.target_rate ? `₹${item.target_rate}` : "NA"}
+             </Text>
+          </View>
+        </View>
+
+        <Pressable
+          style={({ pressed }) => [
+            cardStyles.bidBtn,
+            pressed && { opacity: 0.7 },
+          ]}
+          onPress={() => onAction(item)}
+        >
+          <Text style={cardStyles.bidBtnText}>Let's Bid</Text>
+          <Feather name="send" size={12} color={Colors.white} />
+        </Pressable>
+      </View>
+    </Pressable>
+  );
+}
+
+const cardStyles = StyleSheet.create({
+  card: {
+    backgroundColor: Colors.card,
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  header: {
+    marginBottom: 14,
+    gap: 8,
+  },
+  headerTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  enquiryNo: {
+    fontSize: 15,
+    fontFamily: "Inter_700Bold",
+    color: Colors.primary,
+    marginRight: 8,
+  },
+  dateText: {
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+    color: Colors.textSecondary,
+    marginBottom: 2,
+  },
+  statusBadge: {
+    backgroundColor: "#F3F0FF",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    flexShrink: 1,
+  },
+  statusText: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#7C3AED" },
+  cardBody: { gap: 10, marginBottom: 14 },
+  rowInfo: { flexDirection: "row", alignItems: "center", gap: 6 },
+  customerName: {
+    fontSize: 14,
+    fontFamily: "Inter_500Medium",
+    color: Colors.text,
+    flex: 1,
+  },
+  infoText: {
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    color: Colors.textSecondary,
+  },
+  routeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 4,
+    marginTop: 4,
+  },
+  routePoint: { flexDirection: "row", alignItems: "center", gap: 6, flex: 1 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  routeText: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    color: Colors.textSecondary,
+    flex: 1,
+  },
+  distanceInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      paddingHorizontal: 4,
+  },
+  distanceText: {
+      fontSize: 11,
+      fontFamily: 'Inter_400Regular',
+      color: Colors.textLight,
+  },
+  cardFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
+  footerLeft: { flexDirection: "row", alignItems: "center", gap: 8 },
+  footerItem: { flexDirection: "row", alignItems: "center", gap: 4 },
+  targetRateLabel: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    color: Colors.textLight,
+  },
+  targetRateValue: {
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+    color: Colors.text,
+  },
+  bidBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: Colors.primary,
+    flexShrink: 1,
+  },
+  bidBtnText: {
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+    color: Colors.white,
+    textAlign: "center",
+  },
+});

@@ -1,4 +1,5 @@
 
+import { AgeingBadge } from "@/components/Common/AgeingBadge";
 import VehicleTypeSheet from "@/components/VehicleAssignment/vehicleTypeSheet";
 import VendorPickerSheet from "@/components/VehicleAssignment/vendorPickupSheet";
 import { Colors } from "@/constants/colors";
@@ -34,6 +35,57 @@ const DetailItem = ({ label, value, isWarning }: { label: string; value: string;
   </View>
 );
 
+const InfoBanner = ({ item }: { item: VehicleAssignment }) => {
+  const reqDate = new Date(item.required_on_date);
+  const dateStr = `${String(reqDate.getDate()).padStart(2, "0")}-${String(
+    reqDate.getMonth() + 1,
+  ).padStart(2, "0")}-${reqDate.getFullYear()}`;
+  const timeStr = `${String(reqDate.getHours()).padStart(2, "0")}:${String(
+    reqDate.getMinutes(),
+  ).padStart(2, "0")}`;
+
+  return (
+    <View style={styles.banner}>
+      <View style={styles.bannerHeader}>
+        <Feather name="info" size={16} color={Colors.primary} />
+        <Text style={styles.bannerTitle}>Assignment Overview</Text>
+      </View>
+      
+      <View style={styles.bannerGrid}>
+        <View style={styles.bannerItem}>
+          <Text style={styles.bannerLabel}>Enquiry No</Text>
+          <Text style={styles.bannerValue}>{item.enquiry_no}</Text>
+        </View>
+        <View style={styles.bannerItem}>
+          <Text style={styles.bannerLabel}>Required Date</Text>
+          <Text style={styles.bannerValue}>{dateStr} {timeStr}</Text>
+        </View>
+        <View style={styles.bannerItem}>
+          <Text style={styles.bannerLabel}>Customer</Text>
+          <Text style={styles.bannerValue}>{item.customer_name}</Text>
+        </View>
+        <View style={styles.bannerItem}>
+          <Text style={styles.bannerLabel}>Type</Text>
+          <Text style={styles.bannerValue}>{item.enquiry_type}</Text>
+        </View>
+        <View style={[styles.bannerItem, { width: '100%', marginTop: 8 }]}>
+           <Text style={styles.bannerLabel}>Ageing Status</Text>
+           <View style={{ alignSelf: 'flex-start' }}>
+              <AgeingBadge ageing={item.ageing} pendingSince={item.pending_since} />
+           </View>
+        </View>
+      </View>
+
+      <View style={styles.bannerFooter}>
+        <Text style={styles.bannerLabel}>Route</Text>
+        <Text style={styles.bannerRoute}>
+          {item.from_location} → {item.to_location}
+        </Text>
+      </View>
+    </View>
+  );
+};
+
 export default function VehicleAssignmentScreen() {
  const params = useLocalSearchParams();
 
@@ -61,7 +113,8 @@ const item: VehicleAssignment | null =
 const vendorSheetRef = useRef<BottomSheet>(null);
 const vehicleTypeSheetRef = useRef<BottomSheet>(null);
 
-const vehicleRegex = /^[A-Z]{2}[0-9]{1,2}[A-Z]{1,3}[0-9]{4}$/;
+const vehicleRegex =
+  /^(?:[A-Z]{2}[0-9]{1,2}(?:[A-Z]{1,3})?[0-9]{4}|\d{2}BH\d{4}[A-Z]{1,2})$/;
 
 const [vehicleVerificationStatus, setVehicleVerificationStatus] =
   useState<"idle" | "verifying" | "verified" | "failed">("idle");
@@ -134,15 +187,20 @@ const verifyVehicle = async (vehicleNo: string) => {
   }
 };
 
+let debounceTimer;
+
 const handleVehicleChange = (text: string) => {
-  // Prevent spaces and force uppercase
-  const upper = text.toUpperCase().replace(/\s+/g, "");
+  const upper = text.toUpperCase().replace(/[\s-]/g, "");
 
   setVehicleNumber(upper);
   setManualVehicleVerified(false);
 
-  if (vehicleRegex.test(upper)) {
-    verifyVehicle(upper);
+  clearTimeout(debounceTimer);
+
+  if (upper.length >= 7 && vehicleRegex.test(upper)) {
+    debounceTimer = setTimeout(() => {
+      verifyVehicle(upper);
+    }, 600);
   } else {
     setVehicleVerificationStatus("idle");
     setExpiryAlerts([]);
@@ -228,6 +286,9 @@ const handleVehicleChange = (text: string) => {
       advance_amount: advanceAmount,
       is_new_vendor: false,
       customer_name: item?.customer_name,
+      advance_percentage: selectedVendor.advance_percentage,
+      vendor_gst: selectedVendor?.vendor_gst,
+      vendor_pan: selectedVendor?.pan_no,
     });
 
     if ("message" in response) {
@@ -261,6 +322,8 @@ const handleVehicleChange = (text: string) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
+        {item && <InfoBanner item={item} />}
+
         {/* BASIC DETAILS */}
         <Text style={styles.sectionTitle}>Basic Assignment Details</Text>
 
@@ -286,6 +349,15 @@ const handleVehicleChange = (text: string) => {
     {vehicleAssigned || "Select vehicle type"}
   </Text>
 </Pressable>
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.label}>Order Number</Text>
+          <TextInput
+            style={[styles.input, styles.disabled]}
+            value={item?.order_number || "NA"}
+            editable={false}
+          />
         </View>
 
         {/* RATE TYPE */}
@@ -1002,5 +1074,63 @@ manualBtn: {
     color: "white",
     fontSize: 14,
     fontFamily: "Inter_600SemiBold",
+  },
+  banner: {
+    backgroundColor: "#F0F7FF",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: "#CCE5FF",
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  bannerHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+  },
+  bannerTitle: {
+    fontSize: 14,
+    fontFamily: "Inter_700Bold",
+    color: Colors.primary,
+    letterSpacing: 0.3,
+  },
+  bannerGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    rowGap: 12,
+    columnGap: "6%",
+  },
+  bannerItem: {
+    width: "47%",
+  },
+  bannerLabel: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    color: Colors.textSecondary,
+    marginBottom: 3,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  bannerValue: {
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+    color: Colors.text,
+  },
+  bannerFooter: {
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#CCE5FF",
+    paddingTop: 12,
+  },
+  bannerRoute: {
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+    color: Colors.text,
   },
 });
