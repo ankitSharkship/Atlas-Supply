@@ -14,6 +14,7 @@ import {
   Alert,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -164,6 +165,11 @@ export function UploadMemoModal({
             )}
           </View>
 
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            style={uploadStyles.body}
+            contentContainerStyle={uploadStyles.bodyContent}
+          >
           {/* Info Card */}
           <View style={uploadStyles.infoCard}>
             <View style={uploadStyles.infoRow}>
@@ -271,6 +277,7 @@ export function UploadMemoModal({
           <Text style={uploadStyles.fileHint}>
             Allowed file types: PDF, JPG, JPEG, PNG
           </Text>
+          </ScrollView>
 
           {/* Footer */}
           <View style={uploadStyles.footer}>
@@ -327,11 +334,19 @@ const uploadStyles = StyleSheet.create({
     padding: 24,
     width: "100%",
     maxWidth: 420,
+    maxHeight: "90%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
     shadowRadius: 24,
     elevation: 10,
+  },
+  body: {
+    flexGrow: 0,
+    flexShrink: 1,
+  },
+  bodyContent: {
+    flexGrow: 0,
   },
   header: {
     flexDirection: "row",

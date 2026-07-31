@@ -1,8 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 
-// const API_BASE_URL = 'http://192.168.1.64:8000';
-const API_BASE_URL = 'https://atlas.logipod.in';
+// const API_BASE_URL = 'http://192.168.1.77:8000';
+const API_BASE_URL = 'https://api.logipod.in';
 const ULIP_API_BASE_URL = process.env.EXPO_PUBLIC_ULIP_API_BASE_URL;
 const AUTH_STORAGE_KEY = "auth_user";
 const DEFAULT_TIMEOUT_MS = 60000;
@@ -87,19 +87,16 @@ export class ApiService {
     return headers;
   }
 
-  private static async handleResponse<T>(response: Response): Promise<T> {
+  private static async handleResponse<T>(response: Response, endpoint: string): Promise<T> {
     const data = await safeParseJSON(response);
-
-    // console.log(`[API Response] ${response.status} ${response.url}`);
-    // console.log(`[API Data]`, data);
-
+    console.log(`[API Response] ${response.status} ${response.url}`);
+    console.log(`[API Data]`, data);
     if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
+      if ((response.status === 401 || response.status === 403) && (endpoint !== "/api/login")) {
         await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
         router.dismissAll();
         router.replace("/login");
       }
-
       const message =
         typeof data === "object"
           ? data?.message || data?.error || `Request failed with status ${response.status}`
@@ -107,7 +104,6 @@ export class ApiService {
 
       throw new ApiError(message, response.status, data);
     }
-
     return data as T;
   }
 
@@ -124,7 +120,7 @@ export class ApiService {
         headers,
         body: JSON.stringify(body),
       });
-      return this.handleResponse<T>(response);
+      return this.handleResponse<T>(response, endpoint);
     } catch (err: any) {
       if (err.name === "AbortError") throw new ApiError("Request timed out");
       if (err instanceof ApiError) throw err;
@@ -144,7 +140,7 @@ export class ApiService {
         headers,
         body: JSON.stringify(body),
       });
-      return this.handleResponse<T>(response);
+      return this.handleResponse<T>(response, endpoint);
     } catch (err: any) {
       if (err.name === "AbortError") throw new ApiError("Request timed out");
       if (err instanceof ApiError) throw err;
@@ -209,7 +205,7 @@ export class ApiService {
         },
         120000, // 2 minutes for uploads
       );
-      return this.handleResponse<T>(response);
+      return this.handleResponse<T>(response, endpoint);
     } catch (err: any) {
       if (err.name === "AbortError") throw new ApiError("Upload timed out");
       if (err instanceof ApiError) throw err;
@@ -246,7 +242,7 @@ export class ApiService {
         method: "GET",
         headers,
       });
-      return this.handleResponse<T>(response);
+      return this.handleResponse<T>(response, endpoint);
     } catch (err: any) {
       if (err.name === "AbortError") throw new ApiError("Request timed out");
       if (err instanceof ApiError) throw err;

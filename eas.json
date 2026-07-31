@@ -20,8 +20,8 @@
         "buildType": "app-bundle"
       },
       "env": {
-         "EXPO_PUBLIC_API_URL": "https://atlas.logipod.in",
-         "EXPO_PUBLIC_ULIP_API_BASE_URL": "https://atlas.logipod.in",
+         "EXPO_PUBLIC_API_URL": "https://api.logipod.in",
+         "EXPO_PUBLIC_ULIP_API_BASE_URL": "https://api.logipod.in",
         "EXPO_PUBLIC_EWB_BASE_URL": "https://api.whitebooks.in/ewaybillapi/v1.03",
         "EXPO_PUBLIC_EWB_EMAIL": "connectwithlogipod@gmail.com",
         "EXPO_PUBLIC_EWB_USERNAME": "Ashok_logi_API_bvm",

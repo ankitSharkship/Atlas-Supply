@@ -404,8 +404,8 @@ export function useIntermittentChargeForm(onSuccess: () => void) {
 }
 
 // ─── useEnquiryLookup ──────────────────────────────────────────────────────────
-const API_URL = 'https://atlas.logipod.in';
-// const API_URL = 'http://192.168.1.64:8000';
+const API_URL = 'https://api.logipod.in';
+// const API_URL = 'http://192.168.1.77:8000';
 export function useEnquiryLookup() {
   const [isLoading, setIsLoading] = useState(false);
   const [enquiryData, setEnquiryData] = useState<EnquiryDetailsResponse | null>(

@@ -1,7 +1,7 @@
 import { ApiService } from "./api-service";
 
-// const API_BASE_URL = 'http://192.168.1.64:8000';
-const API_BASE_URL = 'https://atlas.logipod.in';
+// const API_BASE_URL = 'http://192.168.1.77:8000';
+const API_BASE_URL = 'https://api.logipod.in';
 const AUTH_STORAGE_KEY = "auth_user";
 
 export interface VehicleAssignmentDisplayRequest {

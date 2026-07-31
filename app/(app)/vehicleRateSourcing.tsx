@@ -414,7 +414,7 @@ export default function VehicleRateSourcingScreen() {
               </View>
             </ScrollView>
 
-            <View style={styles.modalFooter}>
+            <View style={[styles.modalFooter, { paddingBottom: 16 + bottomPad }]}>
                 <TouchableOpacity 
                     style={styles.cancelBtn} 
                     onPress={() => setModalVisible(false)}

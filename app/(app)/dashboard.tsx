@@ -182,7 +182,7 @@ export default function DashboardScreen() {
     <View style={[styles.root, { backgroundColor: Colors.background }]}>
       <View style={[styles.header, { paddingTop: topPad + 16 }]}>
         <View style={styles.headerLeft}>
-          <Text style={styles.greeting}>HELLO,</Text>
+          <Text style={styles.greeting}>Hello,</Text>
           <Text style={styles.userName} numberOfLines={1}>
             {user?.email.split("@")[0]}
           </Text>
@@ -407,23 +407,23 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   cardsGrid: {
-  flexDirection: 'row',      // NEW: Horizontal layout
-  flexWrap: 'wrap',          // NEW: Wrap to next row
-  gap: 14,
-  marginBottom: 20,
-},
-card: {
-  backgroundColor: Colors.card,
-  borderRadius: 20,
-  padding: 20,
-  shadowColor: Colors.primary,
-  shadowOffset: { width: 0, height: 3 },
-  shadowOpacity: 0.08,
-  shadowRadius: 12,
-  elevation: 3,
-  flexBasis: '48%',         // NEW: ~50% width minus gap (48% safe)
-  // flex: 1,              // Alternative: fills available space
-},
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 14,
+    marginBottom: 20,
+  },
+  card: {
+    backgroundColor: Colors.card,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+    width: '48%',
+  },
   cardPressed: {
     opacity: 0.92,
     transform: [{ scale: 0.98 }],

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Atlas Supply",
     "slug": "sharkship-atlassupply",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/atlas-app.png",
     "scheme": "sharkshipatlassupply",
@@ -54,6 +54,6 @@
        "checkAutomatically": "ON_LOAD",
   "fallbackToCacheTimeout": 0
     },
-    "runtimeVersion": "1.0.0"
+    "runtimeVersion": "1.0.1"
   }
 }
