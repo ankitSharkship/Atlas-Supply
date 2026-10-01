@@ -110,6 +110,7 @@ const item: VehicleAssignment | null =
   const [vendorMG, setVendorMG] = useState(
     String(item?.min_weight_guarantee ?? "")
   );
+  const [remarks, setRemarks] = useState("");
 const vendorSheetRef = useRef<BottomSheet>(null);
 const vehicleTypeSheetRef = useRef<BottomSheet>(null);
 
@@ -214,6 +215,14 @@ const handleVehicleChange = (text: string) => {
   const formatINR = (value: number) =>
   `₹${value.toLocaleString("en-IN")}`;
 
+  const clientFinalRate = item?.client_final_rate ?? null;
+  const vendorRateDiscountPercent =
+    item?.enquiry_type === "ADHOC" && clientFinalRate
+      ? ((clientFinalRate - Number(vendorRate || 0)) * 100) / clientFinalRate
+      : null;
+  const isRemarksMandatory =
+    vendorRateDiscountPercent !== null && vendorRateDiscountPercent < 8;
+
  const handleUpdate = async () => {
   if (!vehicleAssigned) {
     Alert.alert("Validation Error", "Assigned vehicle type is required");
@@ -258,6 +267,14 @@ const handleVehicleChange = (text: string) => {
     return;
   }
 
+  if (isRemarksMandatory && !remarks.trim()) {
+    Alert.alert(
+      "Validation Error",
+      "Remarks are mandatory when vendor rate is more than 8% below the client final rate"
+    );
+    return;
+  }
+
   // Parse numbers safely
   const rate = Number(vendorRate || 0);
   const mg = Number(vendorMG || 0);
@@ -289,6 +306,7 @@ const handleVehicleChange = (text: string) => {
       advance_percentage: selectedVendor.advance_percentage,
       vendor_gst: selectedVendor?.vendor_gst,
       vendor_pan: selectedVendor?.pan_no,
+      remarks: remarks.trim() || undefined,
     });
 
     if ("message" in response) {
@@ -588,6 +606,24 @@ const handleVehicleChange = (text: string) => {
         </View>
 
         <View style={styles.field}>
+          <View style={{ flexDirection: "row", gap: 6 }}>
+  <Text style={styles.label}>Remarks</Text>
+  {isRemarksMandatory && <Text style={styles.required}>*</Text>}
+</View>
+          <TextInput
+            style={[styles.input, styles.remarksInput]}
+            placeholder={
+              isRemarksMandatory
+                ? "Required: vendor rate is more than 8% below client final rate"
+                : "Optional"
+            }
+            value={remarks}
+            onChangeText={setRemarks}
+            multiline
+          />
+        </View>
+
+        <View style={styles.field}>
   <Text style={styles.label}>Advance Amount (Rs)</Text>
 
   <Text style={[styles.input, styles.disabled]}>
@@ -760,6 +796,10 @@ updateBtnFull: {
 
   disabled: {
     opacity: 0.6,
+  },
+  remarksInput: {
+    minHeight: 80,
+    textAlignVertical: "top",
   },
   required: {
   color: "red",

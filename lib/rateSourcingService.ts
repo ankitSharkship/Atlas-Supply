@@ -67,11 +67,17 @@ export interface RateSourcingDisplayResponse {
   rate_sourcing_data: RateSourcingItem[];
   status_filter: string;
   total_count: number;
+  base_count?: number;
+  page?: number;
+  page_size?: number;
 }
 
 export interface RateSourcingDisplayRequest {
   zone: string[];
   status_filter: string;
+  page?: number;
+  page_size?: number;
+  search?: string;
 }
 
 export interface InsertOrUpdateRateSourcingRequest {
@@ -104,16 +110,57 @@ export interface VendorsLookupResponse {
   status: string;
 }
 
+const filterRateSourcingItems = (
+  list: RateSourcingItem[],
+  search: string,
+): RateSourcingItem[] => {
+  const query = search.toLowerCase();
+  return list.filter(
+    (item) =>
+      item.enquiry_no?.toLowerCase().includes(query) ||
+      item.customer_name?.toLowerCase().includes(query) ||
+      item.from_location?.toLowerCase().includes(query) ||
+      item.to_location?.toLowerCase().includes(query) ||
+      item.l1_vendor_name?.toLowerCase().includes(query) ||
+      item.l2_vendor_name?.toLowerCase().includes(query) ||
+      item.l3_vendor_name?.toLowerCase().includes(query) ||
+      item.vehicle_type?.toLowerCase().includes(query),
+  );
+};
+
 export const getRateSourcingDisplay = async (
   zone: string[] = [],
+  page: number = 0,
+  pageSize: number = 20,
+  search: string = "",
 ): Promise<RateSourcingDisplayResponse> => {
-  return ApiService.post<RateSourcingDisplayResponse>(
+  const response = await ApiService.post<RateSourcingDisplayResponse>(
     "/api/rate_sourcing_display",
     {
       zone,
       status_filter: "pending",
+      page,
+      page_size: pageSize,
+      search,
     },
   );
+
+  // Defensive fallback: if the backend hasn't rolled out pagination/search yet,
+  // it returns the full unfiltered list (no `page` field) — filter and slice client-side.
+  if (response.page === undefined) {
+    const fullList = response.rate_sourcing_data || [];
+    const filtered = search ? filterRateSourcingItems(fullList, search) : fullList;
+    const start = page * pageSize;
+    return {
+      ...response,
+      rate_sourcing_data: filtered.slice(start, start + pageSize),
+      total_count: filtered.length,
+      page,
+      page_size: pageSize,
+    };
+  }
+
+  return response;
 };
 
 export const insertOrUpdateRateSourcing = async (

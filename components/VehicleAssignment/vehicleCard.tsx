@@ -21,6 +21,9 @@ export function VehicleAssignmentCard({
     requiredDate.getMinutes(),
   ).padStart(2, "0")}`;
 
+  const isReassign = item.approval != null;
+  const showApproverRemarks = isReassign && item.approver_remarks != null;
+
   return (
     <Pressable style={cardStyles.card} onPress={() => onAction(item)}>
       {/* Top */}
@@ -85,6 +88,16 @@ export function VehicleAssignmentCard({
           <Feather name="hash" size={13} color={Colors.textSecondary} />
           <Text style={cardStyles.orderText}>Order Number: {item.order_number || "NA"}</Text>
         </View>
+
+        {showApproverRemarks && (
+          <View style={cardStyles.approverRemarksBox}>
+            <View style={cardStyles.approverRemarksHeader}>
+              <MaterialCommunityIcons name="message-alert-outline" size={13} color="#92600D" />
+              <Text style={cardStyles.approverRemarksLabel}>Approver Remarks</Text>
+            </View>
+            <Text style={cardStyles.approverRemarksText}>{item.approver_remarks}</Text>
+          </View>
+        )}
       </View>
 
       {/* Footer */}
@@ -105,11 +118,17 @@ export function VehicleAssignmentCard({
         <Pressable
           style={({ pressed }) => [
             cardStyles.uploadBtn,
+            isReassign && cardStyles.uploadBtnReassign,
             pressed && { opacity: 0.7 },
           ]}
           onPress={() => onAction(item)}
         >
-          <Text style={cardStyles.uploadBtnText}>Assign Vehicle</Text>
+          {isReassign && (
+            <Feather name="refresh-cw" size={13} color={Colors.white} />
+          )}
+          <Text style={cardStyles.uploadBtnText}>
+            {isReassign ? "Re-assign" : "Assign Vehicle"}
+          </Text>
         </Pressable>
       </View>
     </Pressable>
@@ -234,10 +253,41 @@ const cardStyles = StyleSheet.create({
   uploadBtnDone: {
     backgroundColor: Colors.success,
   },
+  uploadBtnReassign: {
+    backgroundColor: Colors.success,
+  },
   uploadBtnText: {
     fontSize: 13,
     fontFamily: "Inter_600SemiBold",
     color: Colors.white,
     textAlign: "center",
+  },
+  approverRemarksBox: {
+    backgroundColor: Colors.warningLight,
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+  },
+  approverRemarksHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginBottom: 4,
+  },
+  approverRemarksLabel: {
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    color: "#92600D",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+  },
+  approverRemarksText: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    color: "#78350F",
+    flexWrap: "wrap",
+    lineHeight: 17,
   },
 });

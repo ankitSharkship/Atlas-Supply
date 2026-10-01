@@ -28,15 +28,61 @@ export interface LoadingMemoResponse {
   loading_memo_data: LoadingMemoData[];
   status_filter: string;
   total_count: number;
+  base_count?: number;
+  page?: number;
+  page_size?: number;
 }
+
+const filterLoadingMemos = (
+  list: LoadingMemoData[],
+  search: string,
+): LoadingMemoData[] => {
+  const query = search.toLowerCase();
+  return list.filter(
+    (item) =>
+      item.enquiry_no?.toLowerCase().includes(query) ||
+      item.order_number?.toLowerCase().includes(query) ||
+      item.customer_name?.toLowerCase().includes(query) ||
+      item.vehicle_no?.toLowerCase().includes(query) ||
+      item.vendor_name?.toLowerCase().includes(query) ||
+      item.from_location?.toLowerCase().includes(query) ||
+      item.to_location?.toLowerCase().includes(query),
+  );
+};
 
 export const getLoadingMemoDisplay = async (
   zone: string[] = [],
+  page: number = 0,
+  pageSize: number = 20,
+  search: string = "",
 ): Promise<LoadingMemoResponse> => {
-  return ApiService.post<LoadingMemoResponse>("/api/loading_memo_display", {
-    zone: zone,
-    status_filter: "pending",
-  });
+  const response = await ApiService.post<LoadingMemoResponse>(
+    "/api/loading_memo_display",
+    {
+      zone: zone,
+      status_filter: "pending",
+      page,
+      page_size: pageSize,
+      search,
+    },
+  );
+
+  // Defensive fallback: if the backend hasn't rolled out pagination/search yet,
+  // it returns the full unfiltered list (no `page` field) — filter and slice client-side.
+  if (response.page === undefined) {
+    const fullList = response.loading_memo_data || [];
+    const filtered = search ? filterLoadingMemos(fullList, search) : fullList;
+    const start = page * pageSize;
+    return {
+      ...response,
+      loading_memo_data: filtered.slice(start, start + pageSize),
+      total_count: filtered.length,
+      page,
+      page_size: pageSize,
+    };
+  }
+
+  return response;
 };
 
 export interface UploadLoadingMemoResponse {

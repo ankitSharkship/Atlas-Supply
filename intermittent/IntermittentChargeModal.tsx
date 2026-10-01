@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Modal,
   Platform,
@@ -11,7 +11,6 @@ import {
   View,
 } from "react-native";
 import { useIntermittentChargeForm } from "../hooks/useIntermittentChargeForm";
-import { getVendorsLookup } from "../lib/vehicleAssignmentService";
 import { colors } from "./SharedComponents";
 import { Step1ShipmentDetails } from "./Step1ShipmentDetails";
 import { Step2ChargeDetails } from "./Step2ChargeDetails";
@@ -48,7 +47,6 @@ export const IntermittentChargeModal: React.FC<Props> = ({
     onSuccess?.();
     onClose();
   });
-
 
   // Sync VENDOR RECOVERY locked fields into form state when step changes
   useEffect(() => {

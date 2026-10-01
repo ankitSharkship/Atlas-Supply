@@ -9,8 +9,9 @@ import {
   VendorLookupItem,
 } from "@/lib/rateSourcingService";
 import { AgeingBadge } from "@/components/Common/AgeingBadge";
+import { PaginationBar } from "@/components/Common/PaginationBar";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -35,9 +36,14 @@ export default function VehicleRateSourcingScreen() {
 
   const [items, setItems] = useState<RateSourcingItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 20;
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
+  const appliedSearchRef = useRef("");
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Edit Modal State
   const [modalVisible, setModalVisible] = useState(false);
@@ -62,7 +68,7 @@ export default function VehicleRateSourcingScreen() {
 
   const fetchData = useCallback(async () => {
     try {
-      const response = await getRateSourcingDisplay(user?.zone);
+      const response = await getRateSourcingDisplay(user?.zone, page, PAGE_SIZE, appliedSearch);
       setItems(response.rate_sourcing_data);
       setTotalCount(response.total_count);
     } catch (e: any) {
@@ -71,15 +77,53 @@ export default function VehicleRateSourcingScreen() {
       setIsLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [page, appliedSearch]);
 
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [fetchData]),
+  );
+
+  // Debounce the search input; only hit the API once the query is empty
+  // (reset) or longer than 2 characters.
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      const trimmed = searchQuery.trim();
+      if (
+        (trimmed.length === 0 || trimmed.length > 2) &&
+        trimmed !== appliedSearchRef.current
+      ) {
+        appliedSearchRef.current = trimmed;
+        setIsLoading(true);
+        setPage(0);
+        setAppliedSearch(trimmed);
+      }
+    }, 500);
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    };
+  }, [searchQuery]);
 
   const onRefresh = () => {
     setRefreshing(true);
     fetchData();
+  };
+
+  const hasPrev = page > 0;
+  const hasNext = (page + 1) * PAGE_SIZE < totalCount;
+
+  const goToPrevPage = () => {
+    if (!hasPrev) return;
+    setIsLoading(true);
+    setPage((p) => p - 1);
+  };
+
+  const goToNextPage = () => {
+    if (!hasNext) return;
+    setIsLoading(true);
+    setPage((p) => p + 1);
   };
 
   const handleAction = (item: RateSourcingItem) => {
@@ -210,10 +254,19 @@ export default function VehicleRateSourcingScreen() {
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor={Colors.textLight}
-            clearButtonMode="while-editing"
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery("")}>
+            <TouchableOpacity
+              onPress={() => {
+                setSearchQuery("");
+                if (appliedSearchRef.current !== "") {
+                  appliedSearchRef.current = "";
+                  setIsLoading(true);
+                  setPage(0);
+                  setAppliedSearch("");
+                }
+              }}
+            >
               <Feather name="x-circle" size={16} color={Colors.textLight} />
             </TouchableOpacity>
           )}
@@ -229,23 +282,11 @@ export default function VehicleRateSourcingScreen() {
         />
       ) : (
         <FlatList
-          data={items.filter(item => {
-            const query = searchQuery.toLowerCase();
-            return (
-              item.enquiry_no?.toLowerCase().includes(query) ||
-              item.customer_name?.toLowerCase().includes(query) ||
-              item.from_location?.toLowerCase().includes(query) ||
-              item.to_location?.toLowerCase().includes(query) ||
-              item.l1_vendor_name?.toLowerCase().includes(query) ||
-              item.l2_vendor_name?.toLowerCase().includes(query) ||
-              item.l3_vendor_name?.toLowerCase().includes(query) ||
-              item.vehicle_type?.toLowerCase().includes(query)
-            );
-          })}
+          data={items}
           keyExtractor={(item) => item.enquiry_no}
           contentContainerStyle={[
             styles.listContent,
-            { paddingBottom: bottomPad + 24 },
+            { paddingBottom: bottomPad + 96 },
           ]}
           showsVerticalScrollIndicator={false}
           refreshing={refreshing}
@@ -269,6 +310,16 @@ export default function VehicleRateSourcingScreen() {
           }
         />
       )}
+
+      <PaginationBar
+        page={page}
+        hasPrev={hasPrev && !isLoading}
+        hasNext={hasNext && !isLoading}
+        onPrev={goToPrevPage}
+        onNext={goToNextPage}
+        bottomInset={bottomPad}
+        fadeColor={Colors.background}
+      />
 
       {/* VRS Edit Modal */}
       <Modal

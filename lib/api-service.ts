@@ -2,7 +2,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 
 // const API_BASE_URL = 'http://192.168.1.77:8000';
-const API_BASE_URL = 'https://api.logipod.in';
+const API_BASE_URL = "https://api.logipod.in";
+// const API_BASE_URL = "https://api-staging.logipod.in";
 const ULIP_API_BASE_URL = process.env.EXPO_PUBLIC_ULIP_API_BASE_URL;
 const AUTH_STORAGE_KEY = "auth_user";
 const DEFAULT_TIMEOUT_MS = 60000;
@@ -68,7 +69,7 @@ export class ApiService {
   }
 
   static async getAuthHeaderPublic(): Promise<Record<string, string>> {
-     return this.getAuthHeader();
+    return this.getAuthHeader();
   }
 
   private static async getAuthHeader(): Promise<Record<string, string>> {
@@ -87,19 +88,27 @@ export class ApiService {
     return headers;
   }
 
-  private static async handleResponse<T>(response: Response, endpoint: string): Promise<T> {
+  private static async handleResponse<T>(
+    response: Response,
+    endpoint: string,
+  ): Promise<T> {
     const data = await safeParseJSON(response);
     console.log(`[API Response] ${response.status} ${response.url}`);
     console.log(`[API Data]`, data);
     if (!response.ok) {
-      if ((response.status === 401 || response.status === 403) && (endpoint !== "/api/login")) {
+      if (
+        (response.status === 401 || response.status === 403) &&
+        endpoint !== "/api/login"
+      ) {
         await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
         router.dismissAll();
         router.replace("/login");
       }
       const message =
         typeof data === "object"
-          ? data?.message || data?.error || `Request failed with status ${response.status}`
+          ? data?.message ||
+            data?.error ||
+            `Request failed with status ${response.status}`
           : `Server Error: ${response.status}`;
 
       throw new ApiError(message, response.status, data);
@@ -133,13 +142,16 @@ export class ApiService {
     const headers = await this.getHeaders();
 
     console.log(`[API Request] POST ULIP ${ULIP_API_BASE_URL}${endpoint}`);
-    
+
     try {
-      const response = await fetchWithTimeout(`${ULIP_API_BASE_URL}${endpoint}`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body),
-      });
+      const response = await fetchWithTimeout(
+        `${ULIP_API_BASE_URL}${endpoint}`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify(body),
+        },
+      );
       return this.handleResponse<T>(response, endpoint);
     } catch (err: any) {
       if (err.name === "AbortError") throw new ApiError("Request timed out");
@@ -164,7 +176,7 @@ export class ApiService {
       if (value == null) continue;
 
       if (Array.isArray(value)) {
-        // Backend expects stringified array or comma separated? 
+        // Backend expects stringified array or comma separated?
         // Current code used JSON.stringify, snippet suggested join(",")
         // Keeping original logic of JSON.stringify as it's more standard for complex types
         formData.append(key, JSON.stringify(value));
@@ -214,8 +226,8 @@ export class ApiService {
   }
 
   static async get<T>(
-    endpoint: string, 
-    queryParams?: Record<string, any>
+    endpoint: string,
+    queryParams?: Record<string, any>,
   ): Promise<T> {
     if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
     const headers = await this.getHeaders();

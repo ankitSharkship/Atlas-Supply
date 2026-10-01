@@ -7,11 +7,17 @@ const AUTH_STORAGE_KEY = "auth_user";
 export interface VehicleAssignmentDisplayRequest {
   status_filter: string;
   zone: string[];
+  page?: number;
+  page_size?: number;
+  search?: string;
 }
 
 export interface VehicleAssignmentDisplayResponse {
   status_filter: string;
   total_count: number;
+  base_count?: number;
+  page?: number;
+  page_size?: number;
   vehicle_assignment_data: VehicleAssignmentList;
 }
 export type VehicleAssignmentList = VehicleAssignment[];
@@ -61,7 +67,11 @@ export interface VehicleAssignment {
 
   target_rate: number | null;
   final_rate: number | null;
+  client_final_rate: number | null;
   total_amount: number;
+
+  approval: string | null;
+  approver_remarks: string | null;
 
   advance_amount: number | null;
 
@@ -249,6 +259,7 @@ export interface UpdateVehicleAssignmentRequest {
   advance_percentage: number | null;
   vendor_gst?: string | null;
   vendor_pan?: string | null;
+  remarks?: string;
 }
 
 export interface UpdateVehicleAssignmentSuccessResponse {
@@ -329,16 +340,57 @@ export type VerifyVehicleResponse =
   | VerifyVehicleNotFoundResponse
   | VerifyVehicleErrorResponse;
 
+const filterVehicleAssignments = (
+  list: VehicleAssignmentList,
+  search: string,
+): VehicleAssignmentList => {
+  const query = search.toLowerCase();
+  return list.filter(
+    (item) =>
+      item.enquiry_no?.toLowerCase().includes(query) ||
+      item.order_number?.toLowerCase().includes(query) ||
+      item.customer_name?.toLowerCase().includes(query) ||
+      item.vehicle_number?.toLowerCase().includes(query) ||
+      item.vendor_name?.toLowerCase().includes(query) ||
+      item.from_location?.toLowerCase().includes(query) ||
+      item.to_location?.toLowerCase().includes(query) ||
+      item.vehicle_type?.toLowerCase().includes(query),
+  );
+};
+
 export const getVehicleAssignmentDisplay = async (
   zone: string[] = [],
+  page: number = 0,
+  pageSize: number = 20,
+  search: string = "",
 ): Promise<VehicleAssignmentDisplayResponse> => {
-  return ApiService.post<VehicleAssignmentDisplayResponse>(
+  const response = await ApiService.post<VehicleAssignmentDisplayResponse>(
     "/api/vehicle_assignment_display",
     {
       zone: zone,
       status_filter: "pending",
+      page,
+      page_size: pageSize,
+      search,
     },
   );
+
+  // Defensive fallback: if the backend hasn't rolled out pagination/search yet,
+  // it returns the full unfiltered list (no `page` field) — filter and slice client-side.
+  if (response.page === undefined) {
+    const fullList = response.vehicle_assignment_data || [];
+    const filtered = search ? filterVehicleAssignments(fullList, search) : fullList;
+    const start = page * pageSize;
+    return {
+      ...response,
+      vehicle_assignment_data: filtered.slice(start, start + pageSize),
+      total_count: filtered.length,
+      page,
+      page_size: pageSize,
+    };
+  }
+
+  return response;
 };
 
 export const getVendorsLookup = async (
